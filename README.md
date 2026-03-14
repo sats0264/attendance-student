@@ -1,73 +1,79 @@
-# React + TypeScript + Vite
+# 🎓 Application de Présence Étudiante (Student Attendance App)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Une application web moderne et réactive permettant de gérer la présence des étudiants de manière automatisée grâce à la reconnaissance faciale. Cette interface frontend est construite avec **React**, **TypeScript** et s'intègre avec **AWS Rekognition**.
 
-Currently, two official plugins are available:
+## ✨ Fonctionnalités Principales
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Reconnaissance Faciale :** Prise de présence automatisée et sécurisée via la webcam de l'appareil (`react-webcam`) couplée à l'intelligence artificielle d'AWS Rekognition.
+- **Interface Utilisateur Moderne :** Design élégant, animations fluides (glassmorphism) et interface adaptative développés avec **Tailwind CSS** et **Framer Motion**.
+- **Intégration Cloud :** Communication robuste avec les services backend AWS (Rekognition, API Gateway, DynamoDB) pour un traitement rapide et fiable des données.
+- **Tableau de Bord & Gestion :** Suivi des présences, consultation du profil complet de l'étudiant avec portraits et preuves visuelles des sessions.
 
-## React Compiler
+## 🛠️ Technologies Utilisées
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **Cœur & Langage :** React 19, TypeScript
+- **Styling & Animations :** Tailwind CSS, Framer Motion, clsx, tailwind-merge
+- **Icônes :** Lucide React
+- **Caméra & Capture :** React Webcam
+- **Services Cloud :** AWS SDK (`client-rekognition`, `client-api-gateway`)
+- **Build Tool :** Vite
 
-## Expanding the ESLint configuration
+## 🚀 Démarrage Rapide
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### Prérequis
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+Assurez-vous d'avoir installé [Node.js](https://nodejs.org/) (version 18 ou supérieure recommandée).
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+### Installation
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+1. Ouvrez un terminal à la racine du projet (`attendance-student`).
+2. Installez les dépendances du projet :
+
+```bash
+npm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### Lancement en mode développement
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+Pour démarrer le serveur de développement local avec Fast Refresh (HMR) :
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm run dev
 ```
+
+L'application sera accessible sur le port fourni par Vite (généralement `http://localhost:5173/`).
+
+### Compilation pour la production
+
+Pour générer une version optimisée et prête à être déployée en production :
+
+```bash
+npm run build
+```
+
+Le code compilé sera disponible dans le dossier `dist/`.
+
+## ⚙️ Configuration AWS et Environnement
+
+Pour que les fonctionnalités cloud (comme la reconnaissance faciale via AWS Rekognition et la communication avec le backend via API Gateway) soient opérationnelles, assurez-vous de renseigner les bonnes variables d'environnement.
+
+Créez (si ce n'est pas déjà fait) un fichier `.env` à la racine de votre projet sur le modèle suivant :
+
+```env
+# URL de votre API Gateway (backend Node.js/Express)
+VITE_API_URL=votre_api_url_ici
+
+# Configurations AWS associées si requises côté client (à sécuriser)
+VITE_AWS_REGION=votre_region_aws
+```
+*(Adaptez les noms des variables selon l'implémentation de vos services frontend)*
+
+## 📂 Architecture Principale
+
+- **`src/pages/`** : Vues principales de l'application (ex: `Dashboard`, `Attendance`, `ClassDetail`, etc.).
+- **`src/components/`** : Composants React réutilisables (ex: Modal, Cartes de statistiques, Barre de navigation).
+- **`src/services/` ou `src/api/`** (le cas échéant) : Logique d'appel au backend ou aux SDK AWS.
+- **`src/assets/`** : Fichiers statiques et images.
+
+---
+*Projet propulsé au démarrage par [Vite](https://vitejs.dev/) pour une expérience de développement ultra-rapide.*

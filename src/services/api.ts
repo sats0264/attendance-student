@@ -1,4 +1,4 @@
-export const API_BASE = 'https://dcen88remj.execute-api.us-east-1.amazonaws.com/prod';
+export const API_BASE = import.meta.env.VITE_API_URL || 'https://dcen88remj.execute-api.us-east-1.amazonaws.com/prod';
 
 export interface RecognizedStudent {
   id: string;
