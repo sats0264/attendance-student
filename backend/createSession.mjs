@@ -1,6 +1,9 @@
 import { DynamoDBClient, PutItemCommand } from "@aws-sdk/client-dynamodb";
 
-const dynamodb = new DynamoDBClient({ region: "us-east-1" });
+const REGION = process.env.AWS_REGION || "us-east-1";
+const TABLE_SESSIONS = process.env.DYNAMODB_TABLE_SESSIONS || "Sessions";
+
+const dynamodb = new DynamoDBClient({ region: REGION });
 
 export const handler = async (event) => {
     try {
@@ -17,7 +20,7 @@ export const handler = async (event) => {
         const sessionId = `${class_id}_${subject.toUpperCase().replace(/\s+/g, '_')}_${dateStr}`;
 
         await dynamodb.send(new PutItemCommand({
-            TableName: "Sessions",
+            TableName: TABLE_SESSIONS,
             Item: {
                 "SessionId": { S: sessionId },
                 "ClassId": { S: class_id.toUpperCase() },

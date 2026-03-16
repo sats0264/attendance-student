@@ -2,13 +2,17 @@ import { DynamoDBClient, ScanCommand } from "@aws-sdk/client-dynamodb";
 import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
-const dynamodb = new DynamoDBClient({ region: "us-east-1" });
-const s3 = new S3Client({ region: "us-east-1" });
+const REGION = process.env.AWS_REGION || "us-east-1";
+const TABLE_STUDENTS = process.env.DYNAMODB_TABLE_STUDENTS || "Students";
+const BUCKET_NAME = process.env.S3_BUCKET_NAME || "esmt-presence-storage";
+
+const dynamodb = new DynamoDBClient({ region: REGION });
+const s3 = new S3Client({ region: REGION });
 
 export const handler = async (event) => {
     try {
         const classId = event.queryStringParameters?.classId;
-        const params = { TableName: "Students" };
+        const params = { TableName: TABLE_STUDENTS };
 
         if (classId) {
             params.FilterExpression = "ClassId = :c";
@@ -24,7 +28,7 @@ export const handler = async (event) => {
 
             if (s3Key) {
                 const command = new GetObjectCommand({
-                    Bucket: "esmt-presence-storage",
+                    Bucket: BUCKET_NAME,
                     Key: s3Key,
                 });
                 // Génère une URL valable 1 heure

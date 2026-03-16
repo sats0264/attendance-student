@@ -2,8 +2,13 @@ import { DynamoDBClient, QueryCommand, ScanCommand } from "@aws-sdk/client-dynam
 import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
-const dynamodb = new DynamoDBClient({ region: "us-east-1" });
-const s3 = new S3Client({ region: "us-east-1" });
+const REGION = process.env.AWS_REGION || "us-east-1";
+const TABLE_SESSIONS = process.env.DYNAMODB_TABLE_SESSIONS || "Sessions";
+const TABLE_ATTENDANCE = process.env.DYNAMODB_TABLE_ATTENDANCE || "Attendance";
+const BUCKET_NAME = process.env.S3_BUCKET_NAME || "esmt-presence-storage";
+
+const dynamodb = new DynamoDBClient({ region: REGION });
+const s3 = new S3Client({ region: REGION });
 
 export const handler = async (event) => {
     const studentId = event.queryStringParameters?.studentId;
@@ -12,14 +17,14 @@ export const handler = async (event) => {
     try {
         // 1. Récupérer toutes les sessions de cette classe
         const sessionsData = await dynamodb.send(new ScanCommand({
-            TableName: "Sessions",
+            TableName: TABLE_SESSIONS,
             FilterExpression: "ClassId = :c",
             ExpressionAttributeValues: { ":c": { S: classId } }
         }));
 
         // 2. Récupérer les présences de l'étudiant
         const attendanceData = await dynamodb.send(new QueryCommand({
-            TableName: "Attendance",
+            TableName: TABLE_ATTENDANCE,
             IndexName: "StudentId-index",
             KeyConditionExpression: "StudentId = :s",
             ExpressionAttributeValues: { ":s": { S: studentId } }
@@ -37,7 +42,7 @@ export const handler = async (event) => {
             if (isPresent && attendanceRecord.ProofS3?.S) {
                 try {
                     const command = new GetObjectCommand({
-                        Bucket: "esmt-presence-storage",
+                        Bucket: BUCKET_NAME,
                         Key: attendanceRecord.ProofS3.S,
                     });
                     // On génère l'URL sécurisée qui expire dans 1h

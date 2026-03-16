@@ -1,11 +1,14 @@
 import { DynamoDBClient, ScanCommand } from "@aws-sdk/client-dynamodb";
 
-const dynamodb = new DynamoDBClient({ region: "us-east-1" });
+const REGION = process.env.AWS_REGION || "us-east-1";
+const TABLE_CLASSES = process.env.DYNAMODB_TABLE_CLASSES || "Classes";
+
+const dynamodb = new DynamoDBClient({ region: REGION });
 
 export const handler = async (event) => {
     try {
         const params = {
-            TableName: "Classes"
+            TableName: TABLE_CLASSES
         };
 
         const result = await dynamodb.send(new ScanCommand(params));

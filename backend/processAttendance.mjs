@@ -2,16 +2,22 @@ import { RekognitionClient, IndexFacesCommand, SearchFacesCommand, DeleteFacesCo
 import { DynamoDBClient, GetItemCommand, PutItemCommand } from "@aws-sdk/client-dynamodb";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 
-const rekognition = new RekognitionClient({ region: "us-east-1" });
-const dynamodb = new DynamoDBClient({ region: "us-east-1" });
-const s3 = new S3Client({ region: "us-east-1" });
+const REGION = process.env.AWS_REGION || "us-east-1";
+const TABLE_STUDENTS = process.env.DYNAMODB_TABLE_STUDENTS || "Students";
+const TABLE_ATTENDANCE = process.env.DYNAMODB_TABLE_ATTENDANCE || "Attendance";
+const BUCKET_NAME = process.env.S3_BUCKET_NAME || "esmt-presence-storage";
+const COLLECTION_ID = process.env.REKOGNITION_COLLECTION_ID || "esmt-students-collection";
+
+const rekognition = new RekognitionClient({ region: REGION });
+const dynamodb = new DynamoDBClient({ region: REGION });
+const s3 = new S3Client({ region: REGION });
 
 export const handler = async (event) => {
     try {
         const data = typeof event.body === 'string' ? JSON.parse(event.body) : event;
         const { image, session_id } = data;
-        const bucketName = "esmt-presence-storage";
-        const collectionId = "esmt-students-collection";
+        const bucketName = BUCKET_NAME;
+        const collectionId = COLLECTION_ID;
 
         const base64Data = image.includes(",") ? image.split(",")[1] : image;
         const imageBytes = Buffer.from(base64Data, 'base64');
@@ -48,7 +54,7 @@ export const handler = async (event) => {
                 
                 // Récupération des infos dans DynamoDB
                 const studentData = await dynamodb.send(new GetItemCommand({
-                    TableName: "Students",
+                    TableName: TABLE_STUDENTS,
                     Key: { "FaceId": { S: matchedFaceId } }
                 }));
 
@@ -56,7 +62,7 @@ export const handler = async (event) => {
                     const s = studentData.Item;
                     // Enregistrement de la présence
                     await dynamodb.send(new PutItemCommand({
-                        TableName: "Attendance",
+                        TableName: TABLE_ATTENDANCE,
                         Item: {
                             "SessionId": { S: session_id },
                             "StudentId": { S: s.StudentId.S },

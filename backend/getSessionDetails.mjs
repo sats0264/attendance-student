@@ -1,12 +1,17 @@
 import { DynamoDBClient, QueryCommand, ScanCommand, GetItemCommand } from "@aws-sdk/client-dynamodb";
-const dynamodb = new DynamoDBClient({ region: "us-east-1" });
+const REGION = process.env.AWS_REGION || "us-east-1";
+const TABLE_SESSIONS = process.env.DYNAMODB_TABLE_SESSIONS || "Sessions";
+const TABLE_STUDENTS = process.env.DYNAMODB_TABLE_STUDENTS || "Students";
+const TABLE_ATTENDANCE = process.env.DYNAMODB_TABLE_ATTENDANCE || "Attendance";
+
+const dynamodb = new DynamoDBClient({ region: REGION });
 
 export const handler = async (event) => {
     const sessionId = event.queryStringParameters?.sessionId;
     
     // 1. Récupérer les infos de la session pour avoir le classId
     const sessionRes = await dynamodb.send(new GetItemCommand({
-        TableName: "Sessions",
+        TableName: TABLE_SESSIONS,
         Key: { "SessionId": { S: sessionId } }
     }));
     
@@ -15,14 +20,14 @@ export const handler = async (event) => {
 
     // 2. Récupérer tous les étudiants inscrits dans cette classe
     const studentsRes = await dynamodb.send(new ScanCommand({
-        TableName: "Students",
+        TableName: TABLE_STUDENTS,
         FilterExpression: "ClassId = :c",
         ExpressionAttributeValues: { ":c": { S: classId } }
     }));
 
     // 3. Récupérer les présences enregistrées pour cette session
     const attendanceRes = await dynamodb.send(new QueryCommand({
-        TableName: "Attendance",
+        TableName: TABLE_ATTENDANCE,
         KeyConditionExpression: "SessionId = :s",
         ExpressionAttributeValues: { ":s": { S: sessionId } }
     }));
