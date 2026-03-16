@@ -72,7 +72,7 @@ const Enrollment = () => {
     } finally {
       setLoading(false);
     }
-  });
+  }
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!studentId || !studentName || !classId) {
