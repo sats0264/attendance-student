@@ -72,7 +72,7 @@ const Enrollment = () => {
     } finally {
       setLoading(false);
     }
-  };
+  });
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!studentId || !studentName || !classId) {
@@ -110,8 +110,8 @@ const Enrollment = () => {
       return;
     }
 
-    processEnrollmentImage(imageSrc);
-  }, [webcamRef, studentId, studentName, classId, promotion, isCameraEnabled]);
+    await processEnrollmentImage(imageSrc);
+  }, [studentId, studentName, classId, isCameraEnabled, processEnrollmentImage]);
 
   return (
     <div className="w-full flex flex-col items-center gap-8 md:gap-12 relative overflow-hidden">
