@@ -1,9 +1,9 @@
-import { useRef, useState, useCallback } from 'react';
+import { useRef, useState, useCallback, useEffect } from 'react';
 import Webcam from 'react-webcam';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Camera, CameraOff, AlertTriangle, Loader2, Upload, Play, StopCircle, Users, UserCheck, UserX } from 'lucide-react';
-import { processAttendance, getStudents, createSession, markAttendanceManual, getClasses, type Student, type ClassItem } from '../services/api';
-import { useEffect } from 'react';
+import { processAttendance, getStudents, createSession, markAttendanceManual, getClasses, getTeacherAssignments, type Student } from '../services/api';
+import { useAuth } from '../contexts/AuthContext';
 
 interface ActiveSession {
   sessionId: string;
@@ -13,6 +13,7 @@ interface ActiveSession {
 }
 
 const Attendance = () => {
+  const { userData, isTeacher, isAdmin } = useAuth();
   const webcamRef = useRef<Webcam>(null);
   const [loading, setLoading] = useState(false);
   const [errorMSG, setErrorMSG] = useState<string | null>(null);
@@ -22,29 +23,48 @@ const Attendance = () => {
   const [session, setSession] = useState<ActiveSession | null>(null);
   const [classId, setClassId] = useState('');
   const [subject, setSubject] = useState('');
-  const [teacher, setTeacher] = useState('');
+  const [teacher, setTeacher] = useState(userData?.name || '');
 
   // Students List State
   const [students, setStudents] = useState<(Student & { present: boolean; confidence?: number })[]>([]);
   const [fetchingStudents, setFetchingStudents] = useState(false);
 
   // Classes List
-  const [classes, setClasses] = useState<ClassItem[]>([]);
+  const [classes, setClasses] = useState<any[]>([]);
+  const [assignments, setAssignments] = useState<any[]>([]);
 
   useEffect(() => {
-    const fetchClassesList = async () => {
+    const fetchInitialData = async () => {
       try {
-        const data = await getClasses();
-        setClasses(data);
-        if (data.length > 0 && !classId) {
-          setClassId(data[0].classId);
+        if (isAdmin) {
+          const data = await getClasses();
+          setClasses(data);
+          if (data.length > 0 && !classId) setClassId(data[0].classId);
+        } else if (isTeacher) {
+          const data = await getTeacherAssignments();
+          setAssignments(data);
+          // Group by classId for the dropdown
+          const uniqueClasses = Array.from(new Set(data.map(a => a.className))).map(cName => ({ classId: cName }));
+          setClasses(uniqueClasses);
+          if (uniqueClasses.length > 0 && !classId) setClassId(uniqueClasses[0].classId);
+          setTeacher(userData?.name || '');
         }
       } catch (err) {
-        console.error("Failed to fetch classes", err);
+        console.error("Failed to fetch initial data", err);
       }
     };
-    fetchClassesList();
-  }, []);
+    fetchInitialData();
+  }, [isAdmin, isTeacher, userData]);
+
+  // Update subject when class changes for teachers
+  useEffect(() => {
+    if (isTeacher && classId) {
+      const classAssignments = assignments.filter(a => a.className === classId);
+      if (classAssignments.length > 0) {
+        setSubject(classAssignments[0].subjectName);
+      }
+    }
+  }, [classId, isTeacher, assignments]);
 
   // Fetch students when session starts
   const loadStudents = async (cId: string) => {
@@ -90,7 +110,7 @@ const Attendance = () => {
       setStudents([]);
       setClassId('');
       setSubject('');
-      setTeacher('');
+      setTeacher(userData?.name || '');
     }
   };
 
@@ -224,7 +244,7 @@ const Attendance = () => {
                   <option value="" disabled>Sélectionnez une classe</option>
                   {classes.map((c) => (
                     <option key={c.classId} value={c.classId} className="bg-gray-900">
-                      {c.classId} {c.promotion ? `- ${c.promotion}` : ''}
+                      {c.classId} {isAdmin && c.promotion ? `- ${c.promotion}` : ''}
                     </option>
                   ))}
                 </select>
@@ -232,17 +252,19 @@ const Attendance = () => {
               <div className="flex flex-col gap-2">
                 <label className="text-sm font-semibold text-[var(--color-text-muted)] ml-1">Matière *</label>
                 <input
+                  disabled={isTeacher}
                   type="text" value={subject} onChange={(e) => setSubject(e.target.value)}
                   placeholder="Ex: Cloud Computing"
-                  className="w-full p-4 rounded-xl bg-black/30 border border-white/10 focus:border-[var(--color-primary)] outline-none"
+                  className="w-full p-4 rounded-xl bg-black/30 border border-white/10 focus:border-[var(--color-primary)] outline-none disabled:opacity-50"
                 />
               </div>
               <div className="flex flex-col gap-2 md:col-span-2">
                 <label className="text-sm font-semibold text-[var(--color-text-muted)] ml-1">Enseignant</label>
                 <input
+                  disabled={isTeacher}
                   type="text" value={teacher} onChange={(e) => setTeacher(e.target.value)}
                   placeholder="Nom de l'enseignant"
-                  className="w-full p-4 rounded-xl bg-black/30 border border-white/10 focus:border-[var(--color-primary)] outline-none"
+                  className="w-full p-4 rounded-xl bg-black/30 border border-white/10 focus:border-[var(--color-primary)] outline-none disabled:opacity-50"
                 />
               </div>
             </div>

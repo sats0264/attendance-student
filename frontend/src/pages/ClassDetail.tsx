@@ -14,9 +14,11 @@ import StudentCard from '../components/StudentCard';
 import SessionTable from '../components/SessionTable';
 import StudentDetailsModal from '../components/StudentDetailsModal';
 import SessionDetailsView from '../components/SessionDetailsView';
+import { useAuth } from '../contexts/AuthContext';
 
 const ClassDetail = () => {
   const { classId } = useParams<{ classId: string }>();
+  const { isAdmin, isTeacher, userData } = useAuth();
   const [activeTab, setActiveTab] = useState<'students' | 'history'>('students');
   const [classInfo, setClassInfo] = useState<ClassItem | null>(null);
   const [loading, setLoading] = useState(true);
@@ -72,7 +74,13 @@ const ClassDetail = () => {
     setLoadingSessions(true);
     try {
       const data = await getSessions();
-      const filtered = data.filter(s => s.classId === classId);
+      let filtered = data.filter(s => s.classId === classId);
+      
+      // Filter by teacher if not admin
+      if (isTeacher && userData?.name) {
+        filtered = filtered.filter(s => s.teacher === userData.name);
+      }
+      
       setSessions(filtered.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
     } catch (err) {
       console.error(err);
@@ -123,14 +131,16 @@ const ClassDetail = () => {
           </div>
         </div>
 
-        <Link
-          to="/enrollment"
-          state={{ prefilledClassId: classId }}
-          className="px-6 py-4 rounded-2xl bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-accent)] text-white font-bold flex items-center justify-center gap-3 hover:scale-[1.02] transition-all shadow-lg"
-        >
-          <UserPlus className="w-6 h-6" />
-          INSCRIRE UN ÉTUDIANT
-        </Link>
+        {isAdmin && (
+          <Link
+            to="/enrollment"
+            state={{ prefilledClassId: classId }}
+            className="px-6 py-4 rounded-2xl bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-accent)] text-white font-bold flex items-center justify-center gap-3 hover:scale-[1.02] transition-all shadow-lg"
+          >
+            <UserPlus className="w-6 h-6" />
+            INSCRIRE UN ÉTUDIANT
+          </Link>
+        )}
       </div>
 
       {/* Tabs */}
@@ -181,11 +191,11 @@ const ClassDetail = () => {
             ) : (
               students.map((student, i) => (
                 <StudentCard
-                   key={student.faceId}
-                   student={student}
-                   index={i}
-                   onClick={() => setSelectedStudent(student)}
-                   onDelete={handleDeleteStudent}
+                  key={student.faceId}
+                  student={student}
+                  index={i}
+                  onClick={() => setSelectedStudent(student)}
+                  onDelete={isAdmin ? handleDeleteStudent : undefined}
                 />
               ))
             )}
@@ -199,21 +209,21 @@ const ClassDetail = () => {
             className="glass-panel rounded-3xl border border-white/10 overflow-hidden premium-shadow"
           >
             {loadingSessions ? (
-               <div className="py-20 flex flex-col items-center justify-center gap-4 opacity-50">
-                 <Loader2 className="w-10 h-10 animate-spin" />
-                 <p>Récupération des séances...</p>
-               </div>
+              <div className="py-20 flex flex-col items-center justify-center gap-4 opacity-50">
+                <Loader2 className="w-10 h-10 animate-spin" />
+                <p>Récupération des séances...</p>
+              </div>
             ) : sessions.length === 0 ? (
-               <div className="py-20 flex flex-col items-center justify-center gap-4 opacity-30 text-center">
-                 <Calendar className="w-16 h-16" />
-                 <p className="text-xl">Aucune séance enregistrée pour cette classe.</p>
-               </div>
+              <div className="py-20 flex flex-col items-center justify-center gap-4 opacity-30 text-center">
+                <Calendar className="w-16 h-16" />
+                <p className="text-xl">Aucune séance enregistrée pour cette classe.</p>
+              </div>
             ) : (
-               <SessionTable
-                 sessions={sessions}
-                 onViewDetails={setSelectedSession}
-                 hideClass={true}
-               />
+              <SessionTable
+                sessions={sessions}
+                onViewDetails={setSelectedSession}
+                hideClass={true}
+              />
             )}
           </motion.div>
         ) : (

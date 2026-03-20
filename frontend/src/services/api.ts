@@ -1,4 +1,24 @@
+import { fetchAuthSession } from 'aws-amplify/auth';
+
 export const API_BASE = import.meta.env.VITE_API_URL;
+
+const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
+  try {
+    const session = await fetchAuthSession();
+    const token = session.tokens?.idToken?.toString();
+
+    const headers = {
+      ...options.headers,
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    };
+
+    return await fetch(url, { ...options, headers });
+  } catch (error) {
+    console.error("fetchWithAuth: Failed to get auth session", error);
+    // Fallback sans jeton ou tu peux lancer l'erreur selon le besoin
+    return await fetch(url, options);
+  }
+};
 
 export interface RecognizedStudent {
   id: string;
@@ -67,7 +87,7 @@ export const processAttendance = async (
   imageSrc: string,
   sessionId: string
 ): Promise<AttendanceResponse> => {
-  const response = await fetch(`${API_BASE}/recognize`, {
+  const response = await fetchWithAuth(`${API_BASE}/recognize`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -93,7 +113,7 @@ export const enrollStudent = async (
   classId: string,
   promotion: string
 ): Promise<EnrollResponse> => {
-  const response = await fetch(`${API_BASE}/enroll`, {
+  const response = await fetchWithAuth(`${API_BASE}/enroll`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -117,7 +137,7 @@ export const enrollStudent = async (
 
 export const getStudents = async (classId?: string): Promise<Student[]> => {
   const url = classId ? `${API_BASE}/students?classId=${classId}` : `${API_BASE}/students`;
-  const response = await fetch(url, {
+  const response = await fetchWithAuth(url, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -133,7 +153,7 @@ export const getStudents = async (classId?: string): Promise<Student[]> => {
 };
 
 export const deleteStudent = async (faceId: string): Promise<DeleteResponse> => {
-  const response = await fetch(`${API_BASE}/students`, {
+  const response = await fetchWithAuth(`${API_BASE}/students`, {
     method: 'DELETE',
     headers: {
       'Content-Type': 'application/json',
@@ -156,7 +176,7 @@ export const createSession = async (
   subject: string,
   teacher: string
 ): Promise<SessionResponse> => {
-  const response = await fetch(`${API_BASE}/session`, {
+  const response = await fetchWithAuth(`${API_BASE}/session`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -177,7 +197,7 @@ export const createSession = async (
 };
 
 export const getSessions = async (): Promise<SessionRecord[]> => {
-  const response = await fetch(`${API_BASE}/session`, {
+  const response = await fetchWithAuth(`${API_BASE}/session`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -194,7 +214,7 @@ export const getSessions = async (): Promise<SessionRecord[]> => {
 
 // Use /details for attendance record fetching as per user's list
 export const getAttendance = async (sessionId: string): Promise<AttendanceRecord[]> => {
-  const response = await fetch(`${API_BASE}/session/details?sessionId=${sessionId}`, {
+  const response = await fetchWithAuth(`${API_BASE}/session/details?sessionId=${sessionId}`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -210,7 +230,7 @@ export const getAttendance = async (sessionId: string): Promise<AttendanceRecord
 };
 
 export const getAttendanceByStudent = async (studentId: string, classId: string): Promise<AttendanceRecord[]> => {
-  const response = await fetch(`${API_BASE}/students/details?studentId=${studentId}&classId=${classId}`, {
+  const response = await fetchWithAuth(`${API_BASE}/students/details?studentId=${studentId}&classId=${classId}`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -227,7 +247,7 @@ export const getAttendanceByStudent = async (studentId: string, classId: string)
 
 // Use /classes for creation
 export const createClass = async (classId: string, promotion: string): Promise<any> => {
-  const response = await fetch(`${API_BASE}/classes`, {
+  const response = await fetchWithAuth(`${API_BASE}/classes`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -248,7 +268,7 @@ export const createClass = async (classId: string, promotion: string): Promise<a
 
 // Note: assuming GET /classes might exist or we handle its absence in UI
 export const getClasses = async (): Promise<ClassItem[]> => {
-  const response = await fetch(`${API_BASE}/classes`, {
+  const response = await fetchWithAuth(`${API_BASE}/classes`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',

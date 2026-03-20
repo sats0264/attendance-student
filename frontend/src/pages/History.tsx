@@ -4,8 +4,10 @@ import { History as HistoryIcon, Search, Calendar, Loader2 } from 'lucide-react'
 import { getSessions, type SessionRecord } from '../services/api';
 import SessionTable from '../components/SessionTable';
 import SessionDetailsView from '../components/SessionDetailsView';
+import { useAuth } from '../contexts/AuthContext';
 
 const History = () => {
+  const { isTeacher, isAdmin, userData } = useAuth();
   const [sessions, setSessions] = useState<SessionRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -17,7 +19,13 @@ const History = () => {
     setLoading(true);
     try {
       const data = await getSessions();
-      setSessions(data.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
+      let filtered = data;
+      
+      if (isTeacher && userData?.name) {
+        filtered = data.filter(s => s.teacher === userData.name);
+      }
+      
+      setSessions(filtered.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
     } catch (err: any) {
       console.error(err);
     } finally {
@@ -26,8 +34,10 @@ const History = () => {
   };
 
   useEffect(() => {
-    fetchSessions();
-  }, []);
+    if (userData) {
+      fetchSessions();
+    }
+  }, [userData, isTeacher, isAdmin]);
 
   const filteredSessions = sessions.filter(s =>
     (s.subject ?? "").toLowerCase().includes(searchTerm.toLowerCase()) ||
