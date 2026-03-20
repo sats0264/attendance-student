@@ -7,6 +7,7 @@ import Students from './pages/Students';
 import Classes from './pages/Classes';
 import History from './pages/History';
 import ClassDetail from './pages/ClassDetail';
+import { AuthProvider } from './contexts/AuthContext';
 
 function App() {
   return (
@@ -23,6 +24,8 @@ function App() {
           <Route path="history" element={<History />} />
         </Route>
       </Routes>
+      <AuthProvider>
+      </AuthProvider>
     </Router>
   );
 }
