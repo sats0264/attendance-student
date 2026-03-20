@@ -283,6 +283,82 @@ export const getClasses = async (): Promise<ClassItem[]> => {
   return response.json();
 };
 
+export const createTeacher = async (
+  email: string,
+  fullName: string,
+  className: string,
+  subjectName: string
+): Promise<any> => {
+  const response = await fetchWithAuth(`${API_BASE}/teacher`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      email,
+      fullName,
+      className,
+      subjectName,
+    }),
+  });
+
+  if (!response.ok) {
+    const err = await response.json();
+    throw new Error(err.error || 'Failed to create teacher');
+  }
+
+  return response.json();
+};
+
+export const getTeachers = async (): Promise<any[]> => {
+  const response = await fetchWithAuth(`${API_BASE}/teacher`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    const err = await response.json();
+    throw new Error(err.error || 'Failed to fetch teachers');
+  }
+
+  return response.json();
+};
+
+export const resetTeacherPassword = async (username: string, newPassword: string): Promise<any> => {
+  const response = await fetchWithAuth(`${API_BASE}/teacher/reset-password`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ username, newPassword }),
+  });
+
+  if (!response.ok) {
+    const err = await response.json();
+    throw new Error(err.error || 'Failed to reset password');
+  }
+
+  return response.json();
+};
+
+export const getTeacherAssignments = async (): Promise<any[]> => {
+  const response = await fetchWithAuth(`${API_BASE}/teacher/assignments`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    const err = await response.json();
+    throw new Error(err.error || 'Failed to fetch assignments');
+  }
+
+  return response.json();
+};
+
 export const markAttendanceManual = async (
   _sessionId: string,
   _student: Student,
