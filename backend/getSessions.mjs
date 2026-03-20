@@ -10,6 +10,7 @@ export const handler = async (event) => {
         sessionId: i.SessionId.S,
         classId: i.ClassId.S,
         subject: i.Subject.S,
+        teacher: i.Teacher?.S || "Inconnu",
         date: i.CreatedAt.S
     }));
     return { statusCode: 200, headers: { "Access-Control-Allow-Origin": "*" }, body: JSON.stringify(sessions) };
