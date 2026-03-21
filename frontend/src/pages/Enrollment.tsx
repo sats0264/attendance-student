@@ -3,7 +3,7 @@ import { useLocation, Link } from 'react-router-dom';
 import Webcam from 'react-webcam';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  UserPlus, Camera, CameraOff, Loader2, CheckCircle2,
+  Camera, CameraOff, Loader2, CheckCircle2,
   Upload, ArrowLeft, Fingerprint, ChevronDown, Sparkles
 } from 'lucide-react';
 import { enrollStudent, getClasses, type EnrollResponse, type ClassItem } from '../services/api';
