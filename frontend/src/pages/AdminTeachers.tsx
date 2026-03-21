@@ -6,8 +6,10 @@ import {
   Calendar, ShieldCheck, Key, Lock, Eye, EyeOff 
 } from 'lucide-react';
 import { createTeacher, getTeachers, resetTeacherPassword } from '../services/api';
+import { useToast } from '../contexts/ToastContext';
 
 const AdminTeachers: React.FC = () => {
+  const { success: toastSuccess, error: toastError, warning: toastWarning } = useToast();
   const [isExistingMode, setIsExistingMode] = useState(false);
   const [formData, setFormData] = useState({
     fullName: '',
@@ -93,18 +95,18 @@ const AdminTeachers: React.FC = () => {
 
   const handleResetPassword = async () => {
     if (!newPassword || newPassword.length < 8) {
-      alert("Le mot de passe doit contenir au moins 8 caractères.");
+      toastWarning('Mot de passe trop court', 'Le mot de passe doit contenir au moins 8 caractères.');
       return;
     }
 
     setResetLoading(true);
     try {
       await resetTeacherPassword(resetData.email, newPassword);
-      alert(`Le mot de passe de ${resetData.fullName} a été réinitialisé avec succès.`);
+      toastSuccess('Mot de passe réinitialisé', `Le compte de ${resetData.fullName} a été mis à jour.`);
       setResetData({ ...resetData, isOpen: false });
       setNewPassword('');
     } catch (error: any) {
-      alert("Erreur lors de la réinitialisation : " + error.message);
+      toastError('Erreur de réinitialisation', error.message);
     } finally {
       setResetLoading(false);
     }

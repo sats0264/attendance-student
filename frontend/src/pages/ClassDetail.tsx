@@ -14,11 +14,14 @@ import StudentCard from '../components/StudentCard';
 import SessionTable from '../components/SessionTable';
 import StudentDetailsModal from '../components/StudentDetailsModal';
 import SessionDetailsView from '../components/SessionDetailsView';
+import ConfirmModal from '../components/ConfirmModal';
 import { useAuth } from '../contexts/AuthContext';
+import { useToast } from '../contexts/ToastContext';
 
 const ClassDetail = () => {
   const { classId } = useParams<{ classId: string }>();
   const { isAdmin, isTeacher, userData } = useAuth();
+  const { success: toastSuccess, error: toastError } = useToast();
   const [activeTab, setActiveTab] = useState<'students' | 'history'>('students');
   const [classInfo, setClassInfo] = useState<ClassItem | null>(null);
   const [loading, setLoading] = useState(true);
@@ -28,6 +31,8 @@ const ClassDetail = () => {
   const [loadingSessions, setLoadingSessions] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [selectedSession, setSelectedSession] = useState<SessionRecord | null>(null);
+  const [studentToDelete, setStudentToDelete] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     const fetchClassData = async () => {
@@ -74,11 +79,22 @@ const ClassDetail = () => {
   };
 
   const handleDeleteStudent = async (faceId: string) => {
-    if (!window.confirm("Supprimer cet étudiant ?")) return;
+    setStudentToDelete(faceId);
+  };
+
+  const confirmDeleteStudent = async () => {
+    if (!studentToDelete) return;
+    setIsDeleting(true);
     try {
-      await deleteStudent(faceId);
-      setStudents(prev => prev.filter(s => s.faceId !== faceId));
-    } catch (err: any) { alert("Erreur : " + err.message); }
+      await deleteStudent(studentToDelete);
+      setStudents(prev => prev.filter(s => s.faceId !== studentToDelete));
+      setStudentToDelete(null);
+      toastSuccess('Étudiant supprimé', 'Le profil biométrique a été retiré de Rekognition.');
+    } catch (err: any) {
+      toastError('Erreur de suppression', err.message);
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   if (loading) {
@@ -222,6 +238,17 @@ const ClassDetail = () => {
       </AnimatePresence>
 
       <StudentDetailsModal student={selectedStudent} onClose={() => setSelectedStudent(null)} />
+
+      <ConfirmModal
+        open={!!studentToDelete}
+        title="Supprimer l'étudiant ?"
+        message="Ce profil biométrique sera définitivement supprimé de la collection AWS Rekognition."
+        confirmLabel="Supprimer"
+        variant="danger"
+        loading={isDeleting}
+        onConfirm={confirmDeleteStudent}
+        onCancel={() => setStudentToDelete(null)}
+      />
     </div>
   );
 };

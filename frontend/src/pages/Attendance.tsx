@@ -10,11 +10,14 @@ import {
   getClasses, getTeacherAssignments, type Student
 } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
+import ConfirmModal from '../components/ConfirmModal';
+import { useToast } from '../contexts/ToastContext';
 
 interface ActiveSession { sessionId: string; classId: string; subject: string; teacher: string; }
 
 const Attendance = () => {
   const { userData, isTeacher, isAdmin } = useAuth();
+  const { error: toastError, info: toastInfo } = useToast();
   const webcamRef = useRef<Webcam>(null);
   const [loading, setLoading] = useState(false);
   const [errorMSG, setErrorMSG] = useState<string | null>(null);
@@ -28,6 +31,7 @@ const Attendance = () => {
   const [classes, setClasses] = useState<any[]>([]);
   const [assignments, setAssignments] = useState<any[]>([]);
   const [lastDetection, setLastDetection] = useState<{ count: number; timestamp: Date } | null>(null);
+  const [showStopConfirm, setShowStopConfirm] = useState(false);
 
   useEffect(() => {
     const fetchInitialData = async () => {
@@ -81,10 +85,14 @@ const Attendance = () => {
   };
 
   const stopSession = () => {
-    if (window.confirm("Voulez-vous vraiment terminer cette séance ?")) {
-      setSession(null); setStudents([]); setClassId(''); setSubject('');
-      setTeacher(userData?.name || ''); setLastDetection(null);
-    }
+    setShowStopConfirm(true);
+  };
+
+  const confirmStopSession = () => {
+    setSession(null); setStudents([]); setClassId(''); setSubject('');
+    setTeacher(userData?.name || ''); setLastDetection(null);
+    setShowStopConfirm(false);
+    toastInfo('Séance terminée', 'Les présences ont été enregistrées.');
   };
 
   const processImage = async (imageSrc: string) => {
@@ -126,7 +134,7 @@ const Attendance = () => {
       await markAttendanceManual(session.sessionId, student, newStatus ? 'PRESENT' : 'ABSENT');
     } catch (err: any) {
       setStudents(prev => prev.map(s => s.studentId === student.studentId ? { ...s, present: currentStatus } : s));
-      alert("Erreur : " + err.message);
+      toastError('Erreur de modification', err.message);
     }
   };
 
@@ -158,7 +166,7 @@ const Attendance = () => {
           {session && (
             <motion.button
               whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}
-              onClick={stopSession}
+        onClick={stopSession}
               className="flex items-center gap-3 px-6 py-4 rounded-2xl bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500 hover:text-white hover:border-red-500 hover:shadow-[0_0_30px_rgba(239,68,68,0.4)] transition-all font-black"
             >
               <StopCircle className="w-5 h-5" />
@@ -425,6 +433,16 @@ const Attendance = () => {
           </motion.div>
         )}
       </AnimatePresence>
+      <ConfirmModal
+        open={showStopConfirm}
+        title="Terminer la séance ?"
+        message="Les présences enregistrées seront conservées. Vous pourrez consulter ce rapport dans l'historique."
+        confirmLabel="Terminer"
+        cancelLabel="Continuer"
+        variant="warning"
+        onConfirm={confirmStopSession}
+        onCancel={() => setShowStopConfirm(false)}
+      />
     </div>
   );
 };

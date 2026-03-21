@@ -1,28 +1,44 @@
-import { Heart } from 'lucide-react';
+import { Zap, Shield } from 'lucide-react';
 
 const Footer = () => {
   return (
-    <footer className="w-full mt-auto py-8 md:py-12 
-                       glass-panel rounded-t-3xl text-center
-                       border-t border-white/5 premium-shadow relative overflow-hidden">
-      <div className="flex flex-col items-center gap-4 justify-center max-w-7xl mx-auto z-10 relative">
-        
-        <h2 className="text-xl md:text-2xl font-bold text-gradient">
-          AttendancePro
-        </h2>
-        
-        <p className="text-sm md:text-base text-[var(--color-text-muted)] flex items-center justify-center gap-2">
-          Propulsé par AWS Rekognition & React <Heart className="w-4 h-4 text-[var(--color-error)] animate-pulse" fill="var(--color-error)" />
-        </p>
-        
-        <div className="mt-4 text-xs md:text-sm text-[var(--color-text-muted)] opacity-60">
-          &copy; {new Date().getFullYear()} ESMT Dakar - Tous droits réservés.
+    <footer className="w-full mt-auto relative overflow-hidden">
+      <div className="absolute inset-0 glass-panel border-t border-white/[0.06]" />
+      <div className="absolute top-0 left-1/4 w-80 h-40 bg-indigo-600/8 blur-[80px] rounded-full pointer-events-none" />
+      <div className="absolute top-0 right-1/4 w-80 h-40 bg-purple-600/6 blur-[80px] rounded-full pointer-events-none" />
+
+      <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-10 py-8">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+
+          {/* Brand */}
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-600 to-purple-700 flex items-center justify-center shadow-lg">
+              <Zap className="w-4 h-4 text-white" />
+            </div>
+            <div className="flex flex-col">
+              <span className="text-sm font-black text-white tracking-tight">AttendancePro</span>
+              <span className="text-[10px] font-bold text-white/25 uppercase tracking-widest">Système Biométrique</span>
+            </div>
+          </div>
+
+          {/* Center */}
+          <div className="flex items-center gap-2 text-white/30 text-sm font-medium">
+            <Shield className="w-4 h-4 text-indigo-400/50" />
+            <span>Propulsé par <span className="font-black text-white/50">AWS Rekognition</span> &amp; <span className="font-black text-white/50">React</span></span>
+          </div>
+
+          {/* Right */}
+          <div className="flex flex-col items-center md:items-end gap-1">
+            <span className="text-[11px] text-white/20 font-medium">
+              &copy; {new Date().getFullYear()} ESMT Dakar — Tous droits réservés.
+            </span>
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 border border-white/[0.08] text-[10px] text-white/20 font-bold uppercase tracking-widest">
+              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              Système opérationnel
+            </div>
+          </div>
         </div>
       </div>
-      
-      {/* Decorative background blurs inside footer */}
-      <div className="absolute top-0 right-1/4 w-64 h-64 bg-[var(--color-primary)]/10 blur-[80px] rounded-full -z-10" />
-      <div className="absolute bottom-0 left-1/4 w-64 h-64 bg-[var(--color-accent)]/10 blur-[80px] rounded-full -z-10" />
     </footer>
   );
 };

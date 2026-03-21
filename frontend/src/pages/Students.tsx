@@ -1,11 +1,14 @@
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Users, Loader2, AlertTriangle, Search, Fingerprint, ShieldAlert, X } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Users, Loader2, AlertTriangle, Search, Fingerprint } from 'lucide-react';
 import { getStudents, deleteStudent, type Student } from '../services/api';
 import StudentCard from '../components/StudentCard';
 import StudentDetailsModal from '../components/StudentDetailsModal';
+import ConfirmModal from '../components/ConfirmModal';
+import { useToast } from '../contexts/ToastContext';
 
 const Students = () => {
+  const { error: toastError } = useToast();
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
   const [errorMSG, setErrorMSG] = useState<string | null>(null);
@@ -13,6 +16,7 @@ const Students = () => {
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const fetchStudents = async () => {
     setLoading(true); setErrorMSG(null);
@@ -35,8 +39,9 @@ const Students = () => {
       await deleteStudent(deletingId);
       setStudents(prev => prev.filter(s => s.faceId !== deletingId));
       setDeletingId(null);
+      setShowDeleteConfirm(false);
     } catch (err: any) {
-      alert("Erreur de suppression : " + err.message);
+      toastError('Erreur de suppression', err.message);
     } finally {
       setIsDeleting(false);
     }
@@ -141,63 +146,22 @@ const Students = () => {
               index={i}
               onClick={() => setSelectedStudent(student)}
               showClass={true}
-              onDelete={(faceId) => setDeletingId(faceId)}
+              onDelete={(faceId) => { setDeletingId(faceId); setShowDeleteConfirm(true); }}
             />
           ))}
         </div>
       )}
 
-      {/* Delete Confirmation Modal */}
-      <AnimatePresence>
-        {deletingId && (
-          <div className="fixed inset-0 z-[110] flex items-center justify-center px-4">
-            <motion.div
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              onClick={() => !isDeleting && setDeletingId(null)}
-              className="absolute inset-0 bg-black/70 backdrop-blur-md"
-            />
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
-              transition={{ type: 'spring', stiffness: 200 }}
-              className="w-full max-w-sm glass-panel p-8 rounded-[2rem] relative z-10 flex flex-col items-center text-center gap-6 border border-white/10"
-            >
-              <button onClick={() => setDeletingId(null)} className="absolute top-4 right-4 w-8 h-8 rounded-xl bg-white/5 hover:bg-white/10 flex items-center justify-center transition-all">
-                <X className="w-4 h-4 text-white/50" />
-              </button>
-
-              <div className="relative">
-                <div className="absolute inset-0 bg-red-500/30 rounded-full blur-xl animate-pulse" />
-                <div className="relative w-20 h-20 rounded-[1.5rem] bg-red-500/10 border border-red-500/30 flex items-center justify-center">
-                  <ShieldAlert className="w-10 h-10 text-red-400" />
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-2">
-                <h3 className="text-2xl font-black text-white">Supprimer le profil ?</h3>
-                <p className="text-white/50 text-sm leading-relaxed font-medium">
-                  Cette action supprimera définitivement le visage de la collection Rekognition. Cette opération est <strong className="text-red-400">irréversible</strong>.
-                </p>
-              </div>
-
-              <div className="flex gap-3 w-full">
-                <button
-                  onClick={() => setDeletingId(null)}
-                  className="flex-1 py-4 rounded-2xl bg-white/5 border border-white/10 font-bold hover:bg-white/10 transition-all text-white/70"
-                >
-                  Annuler
-                </button>
-                <button
-                  onClick={handleDelete}
-                  disabled={isDeleting}
-                  className="flex-1 py-4 rounded-2xl bg-red-500/20 hover:bg-red-500 text-red-400 hover:text-white border border-red-500/30 hover:border-red-500 font-black transition-all flex items-center justify-center gap-2 hover:shadow-[0_0_30px_rgba(239,68,68,0.4)]"
-                >
-                  {isDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Supprimer'}
-                </button>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+      <ConfirmModal
+        open={showDeleteConfirm}
+        title="Supprimer le profil ?"
+        message="Cette action supprimera définitivement le visage de la collection Rekognition. Cette opération est irréversible."
+        confirmLabel="Supprimer"
+        variant="danger"
+        loading={isDeleting}
+        onConfirm={handleDelete}
+        onCancel={() => { setShowDeleteConfirm(false); setDeletingId(null); }}
+      />
 
       <StudentDetailsModal student={selectedStudent} onClose={() => setSelectedStudent(null)} />
     </div>
