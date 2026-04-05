@@ -1,0 +1,14 @@
+{
+  "navbar": {
+    "dashboard": "Dashboard",
+    "classes": "Classe",
+    "my_classes": "Mes Classes",
+    "teachers": "Enseignant",
+    "attendance": "Attendance",
+    "profile": "Profil",
+    "logout": "Se déconnecter",
+    "role_admin": "Administrateur",
+    "role_teacher": "Enseignant",
+    "role_user": "Utilisateur"
+  }
+}
