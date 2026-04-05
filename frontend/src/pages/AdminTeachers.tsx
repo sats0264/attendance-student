@@ -7,8 +7,10 @@ import {
 } from 'lucide-react';
 import { createTeacher, getTeachers, resetTeacherPassword } from '../services/api';
 import { useToast } from '../contexts/ToastContext';
+import { useTranslation } from 'react-i18next';
 
 const AdminTeachers: React.FC = () => {
+  const { t } = useTranslation();
   const { success: toastSuccess, error: toastError, warning: toastWarning } = useToast();
   const [isExistingMode, setIsExistingMode] = useState(false);
   const [formData, setFormData] = useState({
@@ -34,7 +36,7 @@ const AdminTeachers: React.FC = () => {
       const data = await getTeachers();
       setTeachers(data);
     } catch (error) {
-      console.error("Erreur lors de la récupération des enseignants:", error);
+      console.error(error);
     } finally {
       setListLoading(false);
     }
@@ -74,8 +76,8 @@ const AdminTeachers: React.FC = () => {
       setStatus({ 
         type: 'success', 
         message: isNew 
-          ? 'L\'enseignant a été créé et assigné avec succès !' 
-          : 'Nouvelle affectation ajoutée avec succès pour cet enseignant.' 
+          ? t('adminTeachers.teacher_created_success') 
+          : t('adminTeachers.assignment_added_success') 
       });
       
       setFormData({
@@ -87,7 +89,7 @@ const AdminTeachers: React.FC = () => {
       // Rafraîchir la liste
       fetchTeachersList();
     } catch (error: any) {
-      setStatus({ type: 'error', message: error.message || 'Une erreur est survenue lors de la création.' });
+      setStatus({ type: 'error', message: error.message || t('adminTeachers.generic_creation_error') });
     } finally {
       setLoading(false);
     }
@@ -95,18 +97,18 @@ const AdminTeachers: React.FC = () => {
 
   const handleResetPassword = async () => {
     if (!newPassword || newPassword.length < 8) {
-      toastWarning('Mot de passe trop court', 'Le mot de passe doit contenir au moins 8 caractères.');
+      toastWarning(t('adminTeachers.pass_too_short'), t('adminTeachers.pass_req_8_chars'));
       return;
     }
 
     setResetLoading(true);
     try {
       await resetTeacherPassword(resetData.email, newPassword);
-      toastSuccess('Mot de passe réinitialisé', `Le compte de ${resetData.fullName} a été mis à jour.`);
+      toastSuccess(t('adminTeachers.pass_reset_success'), t('adminTeachers.account_updated').replace('{x}', resetData.fullName));
       setResetData({ ...resetData, isOpen: false });
       setNewPassword('');
     } catch (error: any) {
-      toastError('Erreur de réinitialisation', error.message);
+      toastError(t('adminTeachers.reset_error'), error.message);
     } finally {
       setResetLoading(false);
     }
@@ -124,8 +126,8 @@ const AdminTeachers: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
-          <h1 className="text-4xl font-bold text-white mb-2 text-gradient">Gestion des Enseignants</h1>
-          <p className="text-[var(--color-text-muted)]">Créez des comptes pour vos enseignants ou gérez leurs affectations.</p>
+          <h1 className="text-4xl font-bold text-white mb-2 text-gradient">{t('adminTeachers.teachers_management')}</h1>
+          <p className="text-[var(--color-text-muted)]">{t('adminTeachers.teachers_management_desc')}</p>
         </motion.div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
@@ -142,13 +144,13 @@ const AdminTeachers: React.FC = () => {
                   onClick={() => { setIsExistingMode(false); setFormData({ ...formData, fullName: '', email: '' }); }}
                   className={`px-6 py-2 rounded-xl text-sm font-bold transition-all ${!isExistingMode ? 'bg-[var(--color-primary)] text-white shadow-lg' : 'text-gray-400 hover:text-white'}`}
                 >
-                  Nouvel Enseignant
+                  {t('adminTeachers.new_teacher')}
                 </button>
                 <button
                   onClick={() => setIsExistingMode(true)}
                   className={`px-6 py-2 rounded-xl text-sm font-bold transition-all ${isExistingMode ? 'bg-[var(--color-primary)] text-white shadow-lg' : 'text-gray-400 hover:text-white'}`}
                 >
-                  Affecter Existant
+                  {t('adminTeachers.assign_existing')}
                 </button>
               </div>
 
@@ -156,7 +158,7 @@ const AdminTeachers: React.FC = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {isExistingMode ? (
                     <div className="md:col-span-2 space-y-2">
-                       <label className="text-sm font-medium text-gray-300 ml-1">Sélectionner l'Enseignant</label>
+                       <label className="text-sm font-medium text-gray-300 ml-1">{t('adminTeachers.select_teacher')}</label>
                        <div className="relative">
                          <Users className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
                          <select
@@ -165,7 +167,7 @@ const AdminTeachers: React.FC = () => {
                            className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/50 transition-all appearance-none cursor-pointer"
                            value={formData.email}
                          >
-                           <option value="" className="bg-gray-900">Choisir un enseignant...</option>
+                           <option value="" className="bg-gray-900">{t('adminTeachers.choose_teacher')}</option>
                            {teachers.map(t => (
                              <option key={t.sub} value={t.email} className="bg-gray-900">
                                {t.fullName} ({t.email})
@@ -177,7 +179,7 @@ const AdminTeachers: React.FC = () => {
                   ) : (
                     <>
                       <div className="space-y-2">
-                        <label className="text-sm font-medium text-gray-300 ml-1">Nom Complet</label>
+                        <label className="text-sm font-medium text-gray-300 ml-1">{t('adminTeachers.full_name')}</label>
                         <div className="relative">
                           <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
                           <input
@@ -185,14 +187,14 @@ const AdminTeachers: React.FC = () => {
                             name="fullName"
                             value={formData.fullName}
                             onChange={handleChange}
-                            placeholder="Ex: Dr. Martin Durand"
+                            placeholder={t('adminTeachers.fullname_placeholder')}
                             className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/50 transition-all"
                           />
                         </div>
                       </div>
 
                       <div className="space-y-2">
-                        <label className="text-sm font-medium text-gray-300 ml-1">Email Professionnel</label>
+                        <label className="text-sm font-medium text-gray-300 ml-1">{t('adminTeachers.pro_email')}</label>
                         <div className="relative">
                           <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
                           <input
@@ -210,7 +212,7 @@ const AdminTeachers: React.FC = () => {
                   )}
 
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-300 ml-1">Classe</label>
+                    <label className="text-sm font-medium text-gray-300 ml-1">{t('adminTeachers.class_name')}</label>
                     <div className="relative">
                       <GraduationCap className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
                       <input
@@ -218,14 +220,14 @@ const AdminTeachers: React.FC = () => {
                         name="className"
                         value={formData.className}
                         onChange={handleChange}
-                        placeholder="Ex: Master 2 Informatique"
+                        placeholder={t('adminTeachers.class_placeholder')}
                         className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/50 transition-all"
                       />
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-300 ml-1">Matière</label>
+                    <label className="text-sm font-medium text-gray-300 ml-1">{t('adminTeachers.subject')}</label>
                     <div className="relative">
                       <BookOpen className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
                       <input
@@ -233,7 +235,7 @@ const AdminTeachers: React.FC = () => {
                         name="subjectName"
                         value={formData.subjectName}
                         onChange={handleChange}
-                        placeholder="Ex: Architecture Cloud"
+                        placeholder={t('adminTeachers.subject_placeholder')}
                         className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/50 transition-all"
                       />
                     </div>
@@ -265,7 +267,7 @@ const AdminTeachers: React.FC = () => {
                   ) : (
                     <>
                       <UserPlus className="w-6 h-6" />
-                      {isExistingMode ? 'Ajouter l\'Affectation' : 'Créer le Compte Enseignant'}
+                      {isExistingMode ? t('adminTeachers.add_assignment') : t('adminTeachers.create_teacher_account')}
                     </>
                   )}
                 </button>
@@ -282,16 +284,16 @@ const AdminTeachers: React.FC = () => {
             <div className="glass-panel p-6 rounded-3xl premium-shadow border border-white/5">
               <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
                 <Users className="w-5 h-5 text-[var(--color-accent)]" />
-                Statistiques
+                {t('adminTeachers.statistics')}
               </h3>
               <div className="grid grid-cols-2 gap-4">
                 <div className="bg-white/5 p-4 rounded-2xl border border-white/5">
                   <p className="text-2xl font-bold text-white">{teachers.length}</p>
-                  <p className="text-xs text-[var(--color-text-muted)]">Enseignants totaux</p>
+                  <p className="text-xs text-[var(--color-text-muted)]">{t('adminTeachers.total_teachers')}</p>
                 </div>
                 <div className="bg-white/5 p-4 rounded-2xl border border-white/5 text-emerald-400">
                   <p className="text-2xl font-bold">100%</p>
-                  <p className="text-xs text-[var(--color-text-muted)]">Actifs</p>
+                  <p className="text-xs text-[var(--color-text-muted)]">{t('adminTeachers.active')}</p>
                 </div>
               </div>
             </div>
@@ -299,10 +301,10 @@ const AdminTeachers: React.FC = () => {
             <div className="glass-panel p-6 rounded-3xl premium-shadow border border-indigo-500/20">
               <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
                 <ShieldCheck className="w-5 h-5 text-indigo-400" />
-                Sécurité
+                {t('adminTeachers.security')}
               </h3>
               <p className="text-sm text-[var(--color-text-muted)] leading-relaxed">
-                Les enseignants reçoivent un mot de passe temporaire par email. Ils devront le changer à leur première connexion sur le portail AttendancePro.
+                {t('adminTeachers.security_info_desc')}
               </p>
             </div>
           </motion.div>
@@ -317,7 +319,7 @@ const AdminTeachers: React.FC = () => {
           <div className="p-6 border-b border-white/5 flex items-center justify-between text-white">
             <h2 className="text-xl font-bold flex items-center gap-3">
               <Users className="w-6 h-6 text-[var(--color-primary)]" />
-              Liste des Enseignants
+              {t('adminTeachers.teachers_list')}
             </h2>
           </div>
           
@@ -325,11 +327,11 @@ const AdminTeachers: React.FC = () => {
             <table className="w-full text-left">
               <thead className="bg-white/5 text-gray-400 text-sm uppercase">
                 <tr>
-                  <th className="px-6 py-4 font-semibold">Enseignant</th>
-                  <th className="px-6 py-4 font-semibold">Email</th>
-                  <th className="px-6 py-4 font-semibold">Statut</th>
-                  <th className="px-6 py-4 font-semibold">Date de création</th>
-                  <th className="px-6 py-4 font-semibold text-right">Actions</th>
+                  <th className="px-6 py-4 font-semibold">{t('adminTeachers.teacher_th')}</th>
+                  <th className="px-6 py-4 font-semibold">{t('adminTeachers.email_th')}</th>
+                  <th className="px-6 py-4 font-semibold">{t('adminTeachers.status_th')}</th>
+                  <th className="px-6 py-4 font-semibold">{t('adminTeachers.created_at_th')}</th>
+                  <th className="px-6 py-4 font-semibold text-right">{t('adminTeachers.actions_th')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5">
@@ -342,7 +344,7 @@ const AdminTeachers: React.FC = () => {
                 ) : teachers.length === 0 ? (
                   <tr>
                     <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
-                      Aucun enseignant trouvé.
+                      {t('adminTeachers.no_teacher_found')}
                     </td>
                   </tr>
                 ) : (
@@ -369,7 +371,7 @@ const AdminTeachers: React.FC = () => {
                             ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' 
                             : 'bg-amber-500/10 border-amber-500/20 text-amber-400'
                         }`}>
-                          {teacher.status === 'CONFIRMED' ? 'Confirmé' : 'En attente'}
+                          {teacher.status === 'CONFIRMED' ? t('adminTeachers.confirmed') : t('adminTeachers.pending')}
                         </span>
                       </td>
                       <td className="px-6 py-4 text-sm text-[var(--color-text-muted)]">
@@ -382,7 +384,7 @@ const AdminTeachers: React.FC = () => {
                         <button 
                           onClick={() => setResetData({ email: teacher.email, fullName: teacher.fullName, isOpen: true })}
                           className="p-2 rounded-lg bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20 transition-all"
-                          title="Réinitialiser le mot de passe"
+                          title={t('adminTeachers.reset_password_btn')}
                         >
                           <Key className="w-4 h-4" />
                         </button>
@@ -411,21 +413,21 @@ const AdminTeachers: React.FC = () => {
                   <Key className="w-8 h-8 text-indigo-400" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold">Réinitialiser Mot de passe</h3>
+                  <h3 className="text-xl font-bold">{t('adminTeachers.reset_password_title')}</h3>
                   <p className="text-sm text-[var(--color-text-muted)]">{resetData.fullName}</p>
                 </div>
               </div>
 
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-300 ml-1">Nouveau Mot de Passe Permanent</label>
+                  <label className="text-sm font-medium text-gray-300 ml-1">{t('adminTeachers.new_permanent_password')}</label>
                   <div className="relative">
                     <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
                     <input
                       type={showPass ? "text" : "password"}
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
-                      placeholder="Min. 8 caractères"
+                      placeholder={t('adminTeachers.min_8_chars')}
                       className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 pl-12 pr-12 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all font-mono"
                     />
                     <button 
@@ -436,7 +438,7 @@ const AdminTeachers: React.FC = () => {
                     </button>
                   </div>
                   <p className="text-[10px] text-[var(--color-text-muted)] ml-1">
-                    Attention : Le mot de passe sera définitif et l'utilisateur n'aura pas l'obligation de le changer immédiatement.
+                    {t('adminTeachers.warning_password_final')}
                   </p>
                 </div>
 
@@ -445,14 +447,14 @@ const AdminTeachers: React.FC = () => {
                     onClick={() => { setResetData({ ...resetData, isOpen: false }); setNewPassword(''); }}
                     className="flex-1 py-3 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all"
                   >
-                    Annuler
+                    {t('adminTeachers.cancel')}
                   </button>
                   <button
                     onClick={handleResetPassword}
                     disabled={resetLoading || !newPassword}
                     className="flex-1 py-3 rounded-2xl bg-indigo-600 text-white font-bold hover:bg-indigo-500 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
                   >
-                    {resetLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Confirmer"}
+                    {resetLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : t('adminTeachers.confirm')}
                   </button>
                 </div>
               </div>

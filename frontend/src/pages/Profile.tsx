@@ -7,6 +7,7 @@ import {
 import { useAuth } from '../contexts/AuthContext';
 import { useState, useEffect } from 'react';
 import { getTeacherAssignments } from '../services/api';
+import { useTranslation } from 'react-i18next';
 
 /* ─────────────────────── Shared helpers ─────────────────────── */
 
@@ -23,6 +24,7 @@ const InfoRow = ({ label, value, icon: Icon }: { label: string; value: string; i
 /* ─────────────────────── Admin Profile ─────────────────────── */
 
 const AdminProfile = ({ userData, groups }: any) => {
+  const { t } = useTranslation();
   const initial = userData?.name?.charAt(0) || 'A';
 
   return (
@@ -56,10 +58,10 @@ const AdminProfile = ({ userData, groups }: any) => {
           <div className="flex flex-col gap-4 text-center md:text-left">
             <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }}>
               <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-yellow-500/10 border border-yellow-500/30 text-yellow-400 text-xs font-black uppercase tracking-widest mb-4">
-                <Crown className="w-3.5 h-3.5" /> Administrateur Système
+                <Crown className="w-3.5 h-3.5" /> {t('profile.sys_admin')}
               </div>
               <h1 className="text-5xl md:text-6xl font-black text-white tracking-tighter leading-none">
-                {userData?.name || 'Administrateur'}
+                {userData?.name || t('profile.admin')}
               </h1>
               <p className="text-lg text-white/40 font-medium mt-2 flex items-center justify-center md:justify-start gap-2">
                 <Mail className="w-4 h-4" /> {userData?.email || 'admin@institution.edu'}
@@ -86,12 +88,12 @@ const AdminProfile = ({ userData, groups }: any) => {
           className="glass-panel p-8 rounded-[2rem] border border-white/5 premium-shadow"
         >
           <h3 className="text-base font-black uppercase tracking-widest text-yellow-400/80 mb-6 flex items-center gap-3">
-            <Fingerprint className="w-5 h-5" /> Identité
+            <Fingerprint className="w-5 h-5" /> {t('profile.identity')}
           </h3>
-          <InfoRow label="Nom complet" value={userData?.name || '—'} icon={User} />
-          <InfoRow label="Email" value={userData?.email || '—'} icon={Mail} />
-          <InfoRow label="Rôle principal" value="Administrateur" icon={Crown} />
-          <InfoRow label="Institution" value="ESMT" icon={GraduationCap} />
+          <InfoRow label={t('profile.full_name')} value={userData?.name || '—'} icon={User} />
+          <InfoRow label={t('profile.email')} value={userData?.email || '—'} icon={Mail} />
+          <InfoRow label={t('profile.main_role')} value={t('profile.admin')} icon={Crown} />
+          <InfoRow label={t('profile.institution')} value="ESMT" icon={GraduationCap} />
         </motion.div>
 
         {/* Security */}
@@ -99,7 +101,7 @@ const AdminProfile = ({ userData, groups }: any) => {
           className="glass-panel p-8 rounded-[2rem] border border-white/5 premium-shadow"
         >
           <h3 className="text-base font-black uppercase tracking-widest text-yellow-400/80 mb-6 flex items-center gap-3">
-            <Shield className="w-5 h-5" /> Sécurité
+            <Shield className="w-5 h-5" /> {t('profile.security')}
           </h3>
 
           <div className="flex flex-col gap-4">
@@ -109,11 +111,11 @@ const AdminProfile = ({ userData, groups }: any) => {
                 <Lock className="w-6 h-6 text-yellow-400" />
               </div>
               <div className="flex flex-col gap-0.5 flex-1">
-                <span className="text-xs font-black uppercase tracking-widest text-white/40">Mot de passe</span>
+                <span className="text-xs font-black uppercase tracking-widest text-white/40">{t('login.password')}</span>
                 <span className="text-base font-bold text-white/80 tracking-widest">••••••••••••</span>
               </div>
               <button className="text-xs font-black text-yellow-400 hover:text-yellow-300 px-4 py-2 rounded-xl border border-yellow-500/20 hover:border-yellow-500/40 hover:bg-yellow-500/10 transition-all">
-                Changer
+                {t('profile.change')}
               </button>
             </div>
 
@@ -123,11 +125,11 @@ const AdminProfile = ({ userData, groups }: any) => {
                 <CheckCircle2 className="w-6 h-6 text-emerald-400" />
               </div>
               <div className="flex flex-col gap-0.5 flex-1">
-                <span className="text-xs font-black uppercase tracking-widest text-white/40">Double Auth (2FA)</span>
-                <span className="text-base font-bold text-emerald-400">Activée</span>
+                <span className="text-xs font-black uppercase tracking-widest text-white/40">{t('profile.two_factor_auth')}</span>
+                <span className="text-base font-bold text-emerald-400">{t('profile.activated')}</span>
               </div>
               <button className="text-xs font-black text-white/50 hover:text-white px-4 py-2 rounded-xl border border-white/10 hover:border-white/20 hover:bg-white/5 transition-all">
-                Configurer
+                {t('profile.configure')}
               </button>
             </div>
 
@@ -137,7 +139,7 @@ const AdminProfile = ({ userData, groups }: any) => {
                 <Zap className="w-6 h-6 text-blue-400" />
               </div>
               <div className="flex flex-col gap-0.5">
-                <span className="text-xs font-black uppercase tracking-widest text-white/40">Fournisseur</span>
+                <span className="text-xs font-black uppercase tracking-widest text-white/40">{t('profile.provider')}</span>
                 <span className="text-base font-bold text-white/80">AWS Cognito</span>
               </div>
             </div>
@@ -151,6 +153,7 @@ const AdminProfile = ({ userData, groups }: any) => {
 /* ─────────────────────── Teacher Profile ─────────────────────── */
 
 const TeacherProfile = ({ userData, groups, assignments, loading }: any) => {
+  const { t } = useTranslation();
   const initial = userData?.name?.charAt(0) || 'P';
 
   return (
@@ -184,10 +187,10 @@ const TeacherProfile = ({ userData, groups, assignments, loading }: any) => {
           <div className="flex flex-col gap-4 text-center md:text-left">
             <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }}>
               <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-purple-500/10 border border-purple-500/30 text-purple-400 text-xs font-black uppercase tracking-widest mb-4">
-                <GraduationCap className="w-3.5 h-3.5" /> Corps Enseignant
+                <GraduationCap className="w-3.5 h-3.5" /> {t('profile.teaching_staff')}
               </div>
               <h1 className="text-5xl md:text-6xl font-black text-white tracking-tighter leading-none">
-                {userData?.name || 'Professeur'}
+                {userData?.name || t('profile.professor')}
               </h1>
               <p className="text-lg text-white/40 font-medium mt-2 flex items-center justify-center md:justify-start gap-2">
                 <Mail className="w-4 h-4" /> {userData?.email || 'prof@institution.edu'}
@@ -201,7 +204,7 @@ const TeacherProfile = ({ userData, groups, assignments, loading }: any) => {
                 </span>
               ))}
               <span className="px-4 py-2 rounded-xl bg-white/5 text-white/50 text-xs font-black uppercase tracking-widest border border-white/10">
-                {assignments.length} Classe{assignments.length !== 1 ? 's' : ''}
+                {assignments.length} {assignments.length !== 1 ? t('profile.classes_plural') : t('profile.class_singular')}
               </span>
             </motion.div>
           </div>
@@ -218,12 +221,12 @@ const TeacherProfile = ({ userData, groups, assignments, loading }: any) => {
             className="glass-panel p-8 rounded-[2rem] border border-white/5 premium-shadow"
           >
             <h3 className="text-base font-black uppercase tracking-widest text-purple-400/80 mb-6 flex items-center gap-3">
-              <Fingerprint className="w-5 h-5" /> Identité
+              <Fingerprint className="w-5 h-5" /> {t('profile.identity')}
             </h3>
-            <InfoRow label="Nom complet" value={userData?.name || '—'} icon={User} />
-            <InfoRow label="Email" value={userData?.email || '—'} icon={Mail} />
-            <InfoRow label="Rôle" value="Enseignant" icon={GraduationCap} />
-            <InfoRow label="Institution" value="ESMT" icon={Layers} />
+            <InfoRow label={t('profile.full_name')} value={userData?.name || '—'} icon={User} />
+            <InfoRow label={t('profile.email')} value={userData?.email || '—'} icon={Mail} />
+            <InfoRow label={t('profile.role')} value={t('profile.teaching_staff')} icon={GraduationCap} />
+            <InfoRow label={t('profile.institution')} value="ESMT" icon={Layers} />
           </motion.div>
 
           {/* Security card */}
@@ -231,7 +234,7 @@ const TeacherProfile = ({ userData, groups, assignments, loading }: any) => {
             className="glass-panel p-8 rounded-[2rem] border border-white/5 premium-shadow"
           >
             <h3 className="text-base font-black uppercase tracking-widest text-purple-400/80 mb-6 flex items-center gap-3">
-              <Shield className="w-5 h-5" /> Sécurité
+              <Shield className="w-5 h-5" /> {t('profile.security')}
             </h3>
             <div className="flex flex-col gap-4">
               <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/5 flex items-center gap-4 hover:border-purple-500/20 transition-all group">
@@ -239,11 +242,11 @@ const TeacherProfile = ({ userData, groups, assignments, loading }: any) => {
                   <Lock className="w-5 h-5 text-purple-400" />
                 </div>
                 <div className="flex flex-col gap-0.5 flex-1">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-white/30">Mot de passe</span>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-white/30">{t('login.password')}</span>
                   <span className="text-sm font-bold text-white/70 tracking-widest">••••••••••••</span>
                 </div>
                 <button className="text-[10px] font-black text-purple-400 hover:text-purple-300 px-3 py-1.5 rounded-lg border border-purple-500/20 hover:bg-purple-500/10 transition-all">
-                  Modifier
+                  {t('profile.modify')}
                 </button>
               </div>
               <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/5 flex items-center gap-4">
@@ -251,8 +254,8 @@ const TeacherProfile = ({ userData, groups, assignments, loading }: any) => {
                   <CheckCircle2 className="w-5 h-5 text-emerald-400" />
                 </div>
                 <div className="flex flex-col gap-0.5">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-white/30">2FA</span>
-                  <span className="text-sm font-bold text-emerald-400">Activée</span>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-white/30">{t('profile.two_factor_auth')}</span>
+                  <span className="text-sm font-bold text-emerald-400">{t('profile.activated')}</span>
                 </div>
               </div>
             </div>
@@ -264,7 +267,7 @@ const TeacherProfile = ({ userData, groups, assignments, loading }: any) => {
           className="lg:col-span-3 glass-panel p-8 rounded-[2rem] border border-white/5 premium-shadow"
         >
           <h3 className="text-base font-black uppercase tracking-widest text-purple-400/80 mb-8 flex items-center gap-3">
-            <BookOpen className="w-5 h-5" /> Mes Affectations de Cours
+            <BookOpen className="w-5 h-5" /> {t('profile.my_course_assignments')}
           </h3>
 
           {loading ? (
@@ -273,12 +276,12 @@ const TeacherProfile = ({ userData, groups, assignments, loading }: any) => {
                 <div className="absolute inset-0 bg-purple-500/40 blur-xl rounded-full animate-pulse" />
                 <div className="relative w-14 h-14 border-4 border-purple-500/30 border-t-purple-400 rounded-full animate-spin" />
               </div>
-              <span className="text-white/40 font-black uppercase tracking-widest text-xs animate-pulse">Chargement...</span>
+              <span className="text-white/40 font-black uppercase tracking-widest text-xs animate-pulse">{t('profile.loading')}</span>
             </div>
           ) : assignments.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 gap-6 opacity-60">
               <BookOpen className="w-16 h-16 text-white/10" />
-              <p className="text-white/40 font-bold text-center">Aucune affectation trouvée pour votre compte.</p>
+              <p className="text-white/40 font-bold text-center">{t('profile.no_assignments_found')}</p>
             </div>
           ) : (
             <div className="relative flex flex-col">

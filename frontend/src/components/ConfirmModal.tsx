@@ -1,5 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { AlertTriangle, X } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface ConfirmModalProps {
   open: boolean;
@@ -41,14 +42,18 @@ const ConfirmModal = ({
   open,
   title,
   message,
-  confirmLabel = 'Confirmer',
-  cancelLabel = 'Annuler',
+  confirmLabel,
+  cancelLabel,
   variant = 'danger',
   loading = false,
   onConfirm,
   onCancel,
 }: ConfirmModalProps) => {
+  const { t } = useTranslation();
   const style = VARIANT_STYLES[variant];
+  
+  const finalConfirmLabel = confirmLabel || t('confirm.confirm');
+  const finalCancelLabel = cancelLabel || t('confirm.cancel');
 
   return (
     <AnimatePresence>
@@ -99,7 +104,7 @@ const ConfirmModal = ({
                 disabled={loading}
                 className="flex-1 py-4 rounded-2xl bg-white/5 border border-white/10 font-bold text-white/60 hover:bg-white/10 hover:text-white transition-all"
               >
-                {cancelLabel}
+                {finalCancelLabel}
               </button>
               <button
                 onClick={onConfirm}
@@ -111,7 +116,7 @@ const ConfirmModal = ({
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
                   </svg>
-                ) : confirmLabel}
+                ) : finalConfirmLabel}
               </button>
             </div>
           </motion.div>

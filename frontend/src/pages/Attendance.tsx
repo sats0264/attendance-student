@@ -12,10 +12,12 @@ import {
 import { useAuth } from '../contexts/AuthContext';
 import ConfirmModal from '../components/ConfirmModal';
 import { useToast } from '../contexts/ToastContext';
+import { useTranslation } from 'react-i18next';
 
 interface ActiveSession { sessionId: string; classId: string; subject: string; teacher: string; }
 
 const Attendance = () => {
+  const { t } = useTranslation();
   const { userData, isTeacher, isAdmin } = useAuth();
   const { error: toastError, info: toastInfo } = useToast();
   const webcamRef = useRef<Webcam>(null);
@@ -43,7 +45,7 @@ const Attendance = () => {
         } else if (isTeacher) {
           const data = await getTeacherAssignments();
           setAssignments(data);
-          const uniqueClasses = Array.from(new Set(data.map((a: any) => a.className))).map(cName => ({ classId: cName }));
+          const uniqueClasses = Array.from(new Set(data.map((a: any) => a.className))).map(cName => ({ classId: cName as string }));
           setClasses(uniqueClasses);
           if (uniqueClasses.length > 0 && !classId) setClassId(uniqueClasses[0].classId);
           setTeacher(userData?.name || '');
@@ -66,12 +68,12 @@ const Attendance = () => {
       const data = await getStudents(cId);
       setStudents(data.map(s => ({ ...s, present: false })));
     } catch (err: any) {
-      setErrorMSG("Erreur lors du chargement des élèves : " + err.message);
+      setErrorMSG(t('attendance.error_loading_students') + err.message);
     } finally { setFetchingStudents(false); }
   };
 
   const startSession = async () => {
-    if (!classId || !subject) { setErrorMSG("Classe et Matière sont obligatoires."); return; }
+    if (!classId || !subject) { setErrorMSG(t('attendance.class_subject_required')); return; }
     setLoading(true); setErrorMSG(null);
     try {
       const resp = await createSession(classId, subject, teacher);
@@ -80,7 +82,7 @@ const Attendance = () => {
         await loadStudents(classId);
       }
     } catch (err: any) {
-      setErrorMSG(err.message || "Erreur lors de la création de la session");
+      setErrorMSG(err.message || t('attendance.error_creating_session'));
     } finally { setLoading(false); }
   };
 
@@ -92,7 +94,7 @@ const Attendance = () => {
     setSession(null); setStudents([]); setClassId(''); setSubject('');
     setTeacher(userData?.name || ''); setLastDetection(null);
     setShowStopConfirm(false);
-    toastInfo('Séance terminée', 'Les présences ont été enregistrées.');
+    toastInfo(t('attendance.session_ended'), t('attendance.attendance_recorded'));
   };
 
   const processImage = async (imageSrc: string) => {
@@ -101,13 +103,13 @@ const Attendance = () => {
     try {
       const data = await processAttendance(imageSrc, session.sessionId);
       setStudents(prev => prev.map(s => {
-        const found = data.students.find(rs => rs.id === s.studentId);
+        const found = data.students.find((rs: any) => rs.id === s.studentId);
         return found ? { ...s, present: true } : s;
       }));
       setLastDetection({ count: data.count, timestamp: new Date() });
-      if (data.count === 0) setErrorMSG("Aucun étudiant reconnu sur cette image.");
+      if (data.count === 0) setErrorMSG(t('attendance.no_student_recognized'));
     } catch (err: any) {
-      setErrorMSG(err.message || "Erreur de reconnaissance");
+      setErrorMSG(err.message || t('attendance.recognition_error'));
     } finally { setLoading(false); }
   };
 
@@ -115,7 +117,7 @@ const Attendance = () => {
     if (!isCameraEnabled) return;
     const imageSrc = webcamRef.current?.getScreenshot();
     if (imageSrc) await processImage(imageSrc);
-  }, [isCameraEnabled, processImage]);
+  }, [isCameraEnabled, processImage, session]);
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -134,7 +136,7 @@ const Attendance = () => {
       await markAttendanceManual(session.sessionId, student, newStatus ? 'PRESENT' : 'ABSENT');
     } catch (err: any) {
       setStudents(prev => prev.map(s => s.studentId === student.studentId ? { ...s, present: currentStatus } : s));
-      toastError('Erreur de modification', err.message);
+      toastError(t('attendance.modification_error'), err.message || t('attendance.error'));
     }
   };
 
@@ -152,13 +154,13 @@ const Attendance = () => {
           <div className="flex flex-col gap-3">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 w-fit text-xs font-black uppercase tracking-widest">
               <Zap className="w-4 h-4" />
-              {session ? `Séance Active · ${session.classId}` : 'Reconnaissance Faciale AWS'}
+              {session ? `${t('attendance.active_session')} ${session.classId}` : t('attendance.aws_facial_recognition')}
             </div>
             <h1 className="text-4xl md:text-5xl font-black tracking-tighter text-white">
               {session ? (
-                <>Appel en cours — <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400">{session.subject}</span></>
+                <>{t('attendance.rollcall_in_progress')}<span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400">{session.subject}</span></>
               ) : (
-                <>Prise de <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400">Présences</span></>
+                <>{t('attendance.taking_of')} <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400">{t('attendance.attendance')}</span></>
               )}
             </h1>
           </div>
@@ -166,11 +168,11 @@ const Attendance = () => {
           {session && (
             <motion.button
               whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}
-        onClick={stopSession}
+              onClick={stopSession}
               className="flex items-center gap-3 px-6 py-4 rounded-2xl bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500 hover:text-white hover:border-red-500 hover:shadow-[0_0_30px_rgba(239,68,68,0.4)] transition-all font-black"
             >
               <StopCircle className="w-5 h-5" />
-              Terminer la Séance
+              {t('attendance.end_session')}
             </motion.button>
           )}
         </div>
@@ -188,22 +190,22 @@ const Attendance = () => {
                   <Play className="w-8 h-8 text-emerald-400" />
                 </div>
                 <div>
-                  <h2 className="text-2xl font-black text-white">Nouvelle Séance</h2>
-                  <p className="text-white/40 text-sm font-medium mt-0.5">Configurez l'appel pour commencer la reconnaissance</p>
+                  <h2 className="text-2xl font-black text-white">{t('attendance.new_session')}</h2>
+                  <p className="text-white/40 text-sm font-medium mt-0.5">{t('attendance.configure_rollcall')}</p>
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 {/* Class selector */}
                 <div className="flex flex-col gap-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-white/40">Classe *</label>
+                  <label className="text-[10px] font-black uppercase tracking-widest text-white/40">{t('attendance.class_required')}</label>
                   <div className="relative">
                     <select
                       value={classId}
                       onChange={(e) => setClassId(e.target.value)}
                       className="w-full px-5 py-4 rounded-2xl bg-white/5 border border-white/10 focus:border-emerald-500/50 outline-none appearance-none cursor-pointer text-white font-semibold transition-all"
                     >
-                      <option value="" disabled className="bg-gray-900">Sélectionnez une classe</option>
+                      <option value="" disabled className="bg-gray-900">{t('attendance.select_class')}</option>
                       {classes.map((c) => (
                         <option key={c.classId} value={c.classId} className="bg-gray-900">
                           {c.classId}{isAdmin && c.promotion ? ` · ${c.promotion}` : ''}
@@ -216,7 +218,7 @@ const Attendance = () => {
 
                 {/* Subject */}
                 <div className="flex flex-col gap-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-white/40">Matière *</label>
+                  <label className="text-[10px] font-black uppercase tracking-widest text-white/40">{t('attendance.subject_required')}</label>
                   <input
                     disabled={isTeacher}
                     type="text" value={subject} onChange={(e) => setSubject(e.target.value)}
@@ -227,11 +229,11 @@ const Attendance = () => {
 
                 {/* Teacher */}
                 <div className="flex flex-col gap-2 md:col-span-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-white/40">Enseignant</label>
+                  <label className="text-[10px] font-black uppercase tracking-widest text-white/40">{t('attendance.teacher')}</label>
                   <input
                     disabled={isTeacher}
                     type="text" value={teacher} onChange={(e) => setTeacher(e.target.value)}
-                    placeholder="Nom de l'enseignant"
+                    placeholder={t('attendance.teacher_name')}
                     className="w-full px-5 py-4 rounded-2xl bg-white/5 border border-white/10 focus:border-emerald-500/50 outline-none text-white placeholder:text-white/20 font-semibold disabled:opacity-40 transition-all"
                   />
                 </div>
@@ -253,7 +255,7 @@ const Attendance = () => {
                 className="w-full py-5 rounded-2xl bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-500 hover:to-cyan-500 text-white font-black text-xl shadow-[0_0_40px_rgba(16,185,129,0.3)] hover:shadow-[0_0_60px_rgba(16,185,129,0.5)] transition-all flex items-center justify-center gap-3 disabled:opacity-50 border border-white/10"
               >
                 {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : <Play className="w-6 h-6" />}
-                OUVRIR LA SÉANCE
+                {t('attendance.open_session')}
               </motion.button>
             </div>
           </motion.div>
@@ -273,7 +275,7 @@ const Attendance = () => {
                   ) : (
                     <div className="flex flex-col items-center gap-4 opacity-30">
                       <CameraOff className="w-16 h-16" />
-                      <p className="text-sm font-bold text-white/60">Caméra désactivée</p>
+                      <p className="text-sm font-bold text-white/60">{t('attendance.camera_disabled')}</p>
                     </div>
                   )}
 
@@ -303,11 +305,11 @@ const Attendance = () => {
                     className="py-4 rounded-2xl bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-500 hover:to-cyan-500 text-white font-black flex items-center justify-center gap-2 disabled:opacity-40 shadow-[0_0_20px_rgba(16,185,129,0.3)] hover:shadow-[0_0_30px_rgba(16,185,129,0.5)] transition-all"
                   >
                     {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Camera className="w-5 h-5" />}
-                    Capture IA
+                    {t('attendance.ai_capture')}
                   </motion.button>
                   <label className="py-4 rounded-2xl bg-white/5 border border-white/10 text-white font-bold hover:bg-white/10 transition-all flex items-center justify-center gap-2 cursor-pointer">
                     <Upload className="w-5 h-5" />
-                    Importer
+                    {t('attendance.import')}
                     <input type="file" accept="image/*" className="hidden" onChange={handleFileUpload} />
                   </label>
                 </div>
@@ -323,7 +325,7 @@ const Attendance = () => {
                     <div className="flex items-center gap-4">
                       <UserCheck className="w-6 h-6 text-emerald-400" />
                       <div>
-                        <p className="font-black text-emerald-400">{lastDetection.count} étudiant{lastDetection.count > 1 ? 's' : ''} reconnu{lastDetection.count > 1 ? 's' : ''}</p>
+                        <p className="font-black text-emerald-400">{lastDetection.count} {lastDetection.count > 1 ? t('attendance.students') : t('attendance.student')} {lastDetection.count > 1 ? t('attendance.recognized_pl') : t('attendance.recognized')}</p>
                         <p className="text-[10px] text-emerald-400/60 font-bold uppercase tracking-widest mt-0.5">
                           {lastDetection.timestamp.toLocaleTimeString()}
                         </p>
@@ -351,7 +353,7 @@ const Attendance = () => {
                 <div className="p-5 border-b border-white/5 bg-white/[0.03] flex items-center justify-between shrink-0">
                   <div className="flex items-center gap-3">
                     <Users className="w-5 h-5 text-white/60" />
-                    <h3 className="text-lg font-black text-white">Liste d'appel</h3>
+                    <h3 className="text-lg font-black text-white">{t('attendance.rollcall_list')}</h3>
                   </div>
 
                   <div className="flex items-center gap-3">
@@ -377,12 +379,12 @@ const Attendance = () => {
                   {fetchingStudents ? (
                     <div className="flex flex-col items-center justify-center h-full gap-4 opacity-40">
                       <Loader2 className="w-10 h-10 animate-spin text-emerald-400" />
-                      <p className="font-bold text-sm">Chargement des inscrits...</p>
+                      <p className="font-bold text-sm">{t('attendance.loading_enrolled')}</p>
                     </div>
                   ) : students.length === 0 ? (
                     <div className="flex flex-col items-center justify-center h-full gap-4 opacity-30 text-center px-8">
                       <BookOpen className="w-16 h-16" />
-                      <p className="font-bold">Aucun étudiant trouvé pour {session.classId}.</p>
+                      <p className="font-bold">{t('attendance.no_student_found_for')} {session.classId}.</p>
                     </div>
                   ) : (
                     students.map((student, i) => (
@@ -422,7 +424,7 @@ const Attendance = () => {
                           }`}
                         >
                           {student.present ? <UserCheck className="w-4 h-4" /> : <UserX className="w-4 h-4" />}
-                          {student.present ? 'PRÉSENT' : 'ABSENT'}
+                          {student.present ? t('attendance.present_upper') : t('attendance.absent_upper')}
                         </button>
                       </motion.div>
                     ))
@@ -435,10 +437,10 @@ const Attendance = () => {
       </AnimatePresence>
       <ConfirmModal
         open={showStopConfirm}
-        title="Terminer la séance ?"
-        message="Les présences enregistrées seront conservées. Vous pourrez consulter ce rapport dans l'historique."
-        confirmLabel="Terminer"
-        cancelLabel="Continuer"
+        title={t('attendance.end_session_q')}
+        message={t('attendance.end_session_confirm_msg')}
+        confirmLabel={t('attendance.finish')}
+        cancelLabel={t('attendance.continue')}
         variant="warning"
         onConfirm={confirmStopSession}
         onCancel={() => setShowStopConfirm(false)}

@@ -2,8 +2,10 @@ import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { signIn, confirmSignIn } from 'aws-amplify/auth';
 import { LogIn, Lock, Mail, AlertCircle, Key, User } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 const Login: React.FC = () => {
+  const { t } = useTranslation();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -57,11 +59,11 @@ const Login: React.FC = () => {
     } catch (err: any) {
       console.error('Erreur de connexion:', err);
       if (err.name === 'NotAuthorizedException' || err.name === 'UserNotFoundException') {
-        setError('Identifiants incorrects.');
+        setError(t('login.invalid_credentials'));
       } else if (err.name === 'InvalidPasswordException') {
-        setError('Le mot de passe ne respecte pas les critères de sécurité. Il doit généralement contenir majuscules, minuscules, chiffres et caractères spéciaux.');
+        setError(t('login.invalid_password'));
       } else {
-        setError(err.message || 'Une erreur est survenue lors de la connexion.');
+        setError(err.message || t('login.generic_error'));
       }
     } finally {
       setLoading(false);
@@ -80,12 +82,12 @@ const Login: React.FC = () => {
             )}
           </div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-white">
-            {isNewPasswordRequired ? 'Nouveau mot de passe' : 'Connexion'}
+            {isNewPasswordRequired ? t('login.new_password') : t('login.login_title')}
           </h2>
           <p className="mt-2 text-center text-sm text-gray-400">
             {isNewPasswordRequired 
-              ? 'Votre compte nécessite un changement de mot de passe' 
-              : 'Portail administrateur & enseignant'
+              ? t('login.password_change_required') 
+              : t('login.portal_subtitle')
             }
           </p>
         </div>
@@ -103,7 +105,7 @@ const Login: React.FC = () => {
               <>
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-1" htmlFor="username">
-                    Identifiant ou Email
+                    {t('login.username_or_email')}
                   </label>
                   <div className="relative rounded-md shadow-sm">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -125,7 +127,7 @@ const Login: React.FC = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-1" htmlFor="password">
-                    Mot de passe
+                    {t('login.password')}
                   </label>
                   <div className="relative rounded-md shadow-sm">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -149,7 +151,7 @@ const Login: React.FC = () => {
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-1" htmlFor="nameAttrib">
-                    Nom complet (Requis par AWS)
+                    {t('login.fullname_required')}
                   </label>
                   <div className="relative rounded-md shadow-sm">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -170,7 +172,7 @@ const Login: React.FC = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-1" htmlFor="newPassword">
-                  Nouveau mot de passe
+                  {t('login.new_password')}
                 </label>
                 <div className="relative rounded-md shadow-sm">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -189,7 +191,7 @@ const Login: React.FC = () => {
                   />
                 </div>
                 <p className="mt-2 text-xs text-gray-500">
-                  Doit respecter les critères de sécurité de votre configuration Cognito.
+                  {t('login.password_criteria')}
                 </p>
               </div>
               </div>
@@ -205,7 +207,7 @@ const Login: React.FC = () => {
               {loading ? (
                 <div className="h-5 w-5 animate-spin rounded-full border-t-2 border-b-2 border-white"></div>
               ) : (
-                isNewPasswordRequired ? 'Changer le mot de passe' : 'Se connecter'
+                isNewPasswordRequired ? t('login.change_password') : t('login.sign_in')
               )}
             </button>
           </div>
