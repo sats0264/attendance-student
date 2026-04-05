@@ -5,6 +5,7 @@ import {
   Loader2, Download, CheckCircle2, XCircle, BookOpen, User
 } from 'lucide-react';
 import { getAttendance, getStudents, type SessionRecord, type AttendanceRecord } from '../services/api';
+import { useTranslation } from 'react-i18next';
 
 interface SessionDetailsViewProps {
   session: SessionRecord;
@@ -12,6 +13,7 @@ interface SessionDetailsViewProps {
 }
 
 const SessionDetailsView = ({ session, onClose }: SessionDetailsViewProps) => {
+  const { t } = useTranslation();
   const [attendance, setAttendance] = useState<AttendanceRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [absenceRate, setAbsenceRate] = useState<number | null>(null);
@@ -81,7 +83,7 @@ const SessionDetailsView = ({ session, onClose }: SessionDetailsViewProps) => {
           <div className="flex flex-col gap-2">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-violet-500/10 border border-violet-500/20 text-violet-400 text-[10px] font-black uppercase tracking-widest w-fit">
               <BookOpen className="w-3 h-3" />
-              Rapport de Séance
+              {t('sessionDetails.session_report')}
             </div>
             <h1 className="text-3xl font-black text-white tracking-tight">{session.subject}</h1>
             <div className="flex items-center gap-4 text-white/40 text-sm font-medium">
@@ -109,7 +111,7 @@ const SessionDetailsView = ({ session, onClose }: SessionDetailsViewProps) => {
           <div className="absolute -bottom-4 -right-4 w-24 h-24 text-emerald-500/10 rotate-12 group-hover:scale-110 transition-transform">
             <TrendingUp className="w-full h-full" />
           </div>
-          <span className="text-[10px] font-black uppercase tracking-widest text-white/30">Taux de présence</span>
+          <span className="text-[10px] font-black uppercase tracking-widest text-white/30">{t('sessionDetails.attendance_rate')}</span>
           <span className={`text-5xl font-black ${(parseFloat(rateDisplay || '0')) >= 80 ? 'text-emerald-400' : (parseFloat(rateDisplay || '0')) >= 60 ? 'text-yellow-400' : 'text-red-400'}`}>
             {loading ? <Loader2 className="w-8 h-8 animate-spin" /> : `${rateDisplay ?? '—'}%`}
           </span>
@@ -127,16 +129,16 @@ const SessionDetailsView = ({ session, onClose }: SessionDetailsViewProps) => {
           <div className="absolute -bottom-4 -right-4 w-24 h-24 text-white/5 rotate-12 group-hover:scale-110 transition-transform">
             <Users className="w-full h-full" />
           </div>
-          <span className="text-[10px] font-black uppercase tracking-widest text-white/30">Présents</span>
+          <span className="text-[10px] font-black uppercase tracking-widest text-white/30">{t('sessionDetails.presents')}</span>
           <span className="text-5xl font-black text-white">
             {loading ? <Loader2 className="w-8 h-8 animate-spin" /> : `${presentCount} / ${totalStudents}`}
           </span>
-          <span className="text-xs text-white/30 font-medium">Étudiants présents sur l'effectif total</span>
+          <span className="text-xs text-white/30 font-medium">{t('sessionDetails.students_present_out_of_total')}</span>
         </div>
 
         {/* Export */}
         <div className="glass-panel p-6 rounded-[2rem] border border-white/10 flex flex-col justify-center gap-4">
-          <span className="text-[10px] font-black uppercase tracking-widest text-white/30">Exporter</span>
+          <span className="text-[10px] font-black uppercase tracking-widest text-white/30">{t('sessionDetails.export')}</span>
           <motion.button
             whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
             onClick={exportCSV}
@@ -144,7 +146,7 @@ const SessionDetailsView = ({ session, onClose }: SessionDetailsViewProps) => {
             className="w-full py-4 rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-black flex items-center justify-center gap-3 shadow-[0_0_25px_rgba(124,58,237,0.3)] hover:shadow-[0_0_40px_rgba(124,58,237,0.5)] transition-all disabled:opacity-40 disabled:cursor-not-allowed border border-white/10"
           >
             <Download className="w-5 h-5" />
-            LISTE CSV
+            {t('sessionDetails.csv_list')}
           </motion.button>
         </div>
       </div>
@@ -154,7 +156,7 @@ const SessionDetailsView = ({ session, onClose }: SessionDetailsViewProps) => {
         <div className="p-5 border-b border-white/5 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Users className="w-5 h-5 text-violet-400" />
-            <h3 className="text-lg font-black text-white">Appel de la séance</h3>
+            <h3 className="text-lg font-black text-white">{t('sessionDetails.session_rollcall')}</h3>
           </div>
           {!loading && (
             <div className="flex items-center gap-2 text-xs font-bold text-white/30">
@@ -171,12 +173,12 @@ const SessionDetailsView = ({ session, onClose }: SessionDetailsViewProps) => {
               <div className="absolute inset-0 bg-violet-500/20 rounded-full blur-xl animate-pulse" />
               <Loader2 className="w-12 h-12 animate-spin text-violet-400 relative z-10" />
             </div>
-            <p className="text-white/30 font-black text-sm uppercase tracking-widest animate-pulse">Chargement des présences...</p>
+            <p className="text-white/30 font-black text-sm uppercase tracking-widest animate-pulse">{t('sessionDetails.loading_attendance')}</p>
           </div>
         ) : attendance.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-24 gap-4 opacity-25 text-center">
             <TrendingDown className="w-16 h-16" />
-            <p className="font-bold">Aucune donnée de présence enregistrée.</p>
+            <p className="font-bold">{t('sessionDetails.no_attendance_data')}</p>
           </div>
         ) : (
           <div className="p-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
@@ -215,7 +217,7 @@ const SessionDetailsView = ({ session, onClose }: SessionDetailsViewProps) => {
                         ? <CheckCircle2 className="w-3 h-3 text-emerald-400" />
                         : <XCircle className="w-3 h-3 text-red-400/60" />}
                       <span className={`text-[9px] font-black uppercase ${isPresent ? 'text-emerald-400' : 'text-red-400/60'}`}>
-                        {a.Status}
+                        {isPresent ? t('attendance.present_upper') : t('attendance.absent_upper')}
                       </span>
                     </div>
                   </div>

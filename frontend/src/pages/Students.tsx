@@ -6,8 +6,10 @@ import StudentCard from '../components/StudentCard';
 import StudentDetailsModal from '../components/StudentDetailsModal';
 import ConfirmModal from '../components/ConfirmModal';
 import { useToast } from '../contexts/ToastContext';
+import { useTranslation } from 'react-i18next';
 
 const Students = () => {
+  const { t } = useTranslation();
   const { error: toastError } = useToast();
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
@@ -24,7 +26,7 @@ const Students = () => {
       const data = await getStudents();
       setStudents(data);
     } catch (err: any) {
-      setErrorMSG(err.message || "Impossible de récupérer la liste des étudiants");
+      setErrorMSG(err.message || t('students.cannot_fetch_students'));
     } finally {
       setLoading(false);
     }
@@ -41,7 +43,7 @@ const Students = () => {
       setDeletingId(null);
       setShowDeleteConfirm(false);
     } catch (err: any) {
-      toastError('Erreur de suppression', err.message);
+      toastError(t('students.delete_error'), err.message);
     } finally {
       setIsDeleting(false);
     }
@@ -69,14 +71,14 @@ const Students = () => {
           <div className="flex flex-col gap-4">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 w-fit text-xs font-black uppercase tracking-widest">
               <Fingerprint className="w-4 h-4" />
-              Base Biométrique Rekognition
+              {t('students.rekognition_db')}
             </div>
             <h1 className="text-4xl md:text-6xl font-black tracking-tighter text-white">
-              Gestion des{' '}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">Étudiants</span>
+              {t('students.management_of')}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">{t('students.students')}</span>
             </h1>
             <p className="text-white/50 text-base font-medium max-w-xl">
-              Liste complète des profils biométriques enrôlés dans le système AWS Rekognition.
+              {t('students.students_list_desc')}
             </p>
           </div>
 
@@ -84,11 +86,11 @@ const Students = () => {
           <div className="flex gap-4 shrink-0">
             <div className="flex flex-col items-center justify-center px-6 py-4 rounded-2xl bg-white/5 border border-white/10 min-w-[100px]">
               <span className="text-3xl font-black text-blue-400">{students.length}</span>
-              <span className="text-[10px] font-black uppercase tracking-widest text-white/30 mt-1">Étudiants</span>
+              <span className="text-[10px] font-black uppercase tracking-widest text-white/30 mt-1">{t('students.students')}</span>
             </div>
             <div className="flex flex-col items-center justify-center px-6 py-4 rounded-2xl bg-white/5 border border-white/10 min-w-[100px]">
               <span className="text-3xl font-black text-purple-400">{uniqueClasses}</span>
-              <span className="text-[10px] font-black uppercase tracking-widest text-white/30 mt-1">Classes</span>
+              <span className="text-[10px] font-black uppercase tracking-widest text-white/30 mt-1">{t('students.classes')}</span>
             </div>
           </div>
         </div>
@@ -100,7 +102,7 @@ const Students = () => {
           <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-white/30 group-focus-within:text-blue-400 transition-colors" />
           <input
             type="text"
-            placeholder="Rechercher par nom, ID ou classe..."
+            placeholder={t('students.search_student')}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-14 pr-5 py-4 rounded-2xl bg-white/5 border border-white/10 focus:border-blue-500/50 outline-none transition-all text-white placeholder:text-white/30 font-medium"
@@ -110,7 +112,7 @@ const Students = () => {
           <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}
             className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-white/5 border border-white/10 text-white/50 text-sm font-bold shrink-0">
             <Users className="w-4 h-4" />
-            {filteredStudents.length} résultat{filteredStudents.length !== 1 ? 's' : ''}
+            {filteredStudents.length} {filteredStudents.length !== 1 ? t('students.results') : t('students.result')}
           </motion.div>
         )}
       </div>
@@ -130,12 +132,12 @@ const Students = () => {
             <div className="absolute inset-0 bg-blue-500/30 blur-xl rounded-full animate-pulse" />
             <Loader2 className="w-14 h-14 animate-spin text-blue-400 relative z-10" />
           </div>
-          <p className="text-white/40 font-black uppercase tracking-widest text-sm animate-pulse">Synchronisation Rekognition...</p>
+          <p className="text-white/40 font-black uppercase tracking-widest text-sm animate-pulse">{t('students.sync_rekognition')}</p>
         </div>
       ) : filteredStudents.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-32 gap-6 opacity-30">
           <Users className="w-20 h-20 text-white/20" />
-          <p className="text-xl font-black text-white/50">Aucun étudiant trouvé.</p>
+          <p className="text-xl font-black text-white/50">{t('students.no_student_found')}</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -154,9 +156,9 @@ const Students = () => {
 
       <ConfirmModal
         open={showDeleteConfirm}
-        title="Supprimer le profil ?"
-        message="Cette action supprimera définitivement le visage de la collection Rekognition. Cette opération est irréversible."
-        confirmLabel="Supprimer"
+        title={t('students.delete_profile')}
+        message={t('students.delete_confirm_msg')}
+        confirmLabel={t('students.delete')}
         variant="danger"
         loading={isDeleting}
         onConfirm={handleDelete}

@@ -4,8 +4,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { GraduationCap, Plus, Loader2, Search, Calendar, ChevronRight, AlertTriangle, BookOpen, Sparkles, X, CheckCircle2 } from 'lucide-react';
 import { createClass, getClasses, getTeacherAssignments } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
+import { useTranslation } from 'react-i18next';
 
 const Classes = () => {
+  const { t } = useTranslation();
   const { isAdmin, isTeacher } = useAuth();
   const [classList, setClassList] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -39,16 +41,16 @@ const Classes = () => {
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!classId || !promotion) { setErrorMSG("ID Classe et Promotion sont requis."); return; }
+    if (!classId || !promotion) { setErrorMSG(t('classes.id_promo_required')); return; }
     setCreating(true); setErrorMSG(null); setSuccessMSG(null);
     try {
       await createClass(classId, promotion);
-      setSuccessMSG(`Classe ${classId} créée avec succès !`);
+      setSuccessMSG(t('classes.class_created_success', { classId }));
       setClassId(''); setPromotion('');
       await fetchClasses();
       setTimeout(() => { setShowForm(false); setSuccessMSG(null); }, 2000);
     } catch (err: any) {
-      setErrorMSG(err.message || "Erreur lors de la création");
+      setErrorMSG(err.message || t('classes.creation_error'));
     } finally {
       setCreating(false);
     }
@@ -81,14 +83,14 @@ const Classes = () => {
           <div className="flex flex-col gap-3">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 w-fit text-xs font-black uppercase tracking-widest">
               <GraduationCap className="w-4 h-4" />
-              {isAdmin ? 'Administration Académique' : 'Mes Affectations'}
+              {isAdmin ? t('classes.academic_admin') : t('classes.my_assignments')}
             </div>
             <h1 className="text-4xl md:text-6xl font-black tracking-tighter text-white">
-              {isAdmin ? 'Gestion des ' : 'Mes '}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">Classes</span>
+              {isAdmin ? t('classes.management_of') : t('classes.my')}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">{t('classes.classes')}</span>
             </h1>
             <p className="text-white/50 text-base md:text-lg font-medium">
-              {isAdmin ? 'Créez et organisez vos promotions académiques.' : 'Retrouvez les classes et matières auxquelles vous êtes affecté.'}
+              {isAdmin ? t('classes.create_organize_promo') : t('classes.find_assigned_classes')}
             </p>
           </div>
 
@@ -99,7 +101,7 @@ const Classes = () => {
               className="flex items-center gap-3 px-8 py-5 rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-black text-base shadow-[0_0_30px_rgba(99,102,241,0.4)] hover:shadow-[0_0_50px_rgba(99,102,241,0.6)] transition-all shrink-0 border border-white/10"
             >
               <Plus className="w-5 h-5" />
-              Nouvelle Classe
+              {t('classes.new_class')}
             </motion.button>
           )}
         </div>
@@ -110,7 +112,7 @@ const Classes = () => {
         <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-white/30 group-focus-within:text-indigo-400 transition-colors" />
         <input
           type="text"
-          placeholder={isAdmin ? "Rechercher une classe, une promotion..." : "Rechercher une classe, une matière..."}
+          placeholder={isAdmin ? t('classes.search_class_promo') : t('classes.search_class_subject')}
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="w-full pl-14 pr-5 py-4 rounded-2xl bg-white/5 border border-white/10 focus:border-indigo-500/50 outline-none transition-all text-white placeholder:text-white/30 font-medium"
@@ -121,19 +123,19 @@ const Classes = () => {
       {loading ? (
         <div className="flex flex-col items-center justify-center py-32 gap-6">
           <Loader2 className="w-14 h-14 animate-spin text-indigo-400" />
-          <p className="text-white/40 font-black uppercase tracking-widest text-sm animate-pulse">Chargement...</p>
+          <p className="text-white/40 font-black uppercase tracking-widest text-sm animate-pulse">{t('classes.loading')}</p>
         </div>
       ) : filteredClasses.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-32 gap-6 opacity-30">
           <GraduationCap className="w-20 h-20 text-white/20" />
-          <p className="text-xl font-black text-white/50">Aucune classe répertoriée.</p>
+          <p className="text-xl font-black text-white/50">{t('classes.no_class_listed')}</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
           {filteredClasses.map((c, i) => {
             const grad = gradients[i % gradients.length];
             const label = c.classId || c.className;
-            const sub = isAdmin ? `Promotion ${c.promotion}` : c.subjectName;
+            const sub = isAdmin ? `${t('classes.promotion')} ${c.promotion}` : c.subjectName;
             return (
               <Link key={c.assignmentId || `${c.classId}-${i}`} to={`/classes/${label}`} className="group">
                 <motion.div
@@ -164,7 +166,7 @@ const Classes = () => {
                   </div>
 
                   <div className="relative z-10 mt-4 flex items-center justify-between">
-                    <span className="text-[10px] font-black uppercase tracking-widest text-white/20 group-hover:text-white/40 transition-colors">Voir la classe</span>
+                    <span className="text-[10px] font-black uppercase tracking-widest text-white/20 group-hover:text-white/40 transition-colors">{t('classes.view_class')}</span>
                     <div className="w-8 h-8 rounded-xl bg-white/5 group-hover:bg-white/10 flex items-center justify-center transition-all">
                       <ChevronRight className="w-4 h-4 text-white/30 group-hover:text-white/80 group-hover:translate-x-0.5 transition-all" />
                     </div>
@@ -201,25 +203,25 @@ const Classes = () => {
                   <Sparkles className="w-7 h-7 text-indigo-400" />
                 </div>
                 <div>
-                  <h2 className="text-2xl font-black text-white">Nouvelle Classe</h2>
-                  <p className="text-white/40 text-sm font-medium">Renseignez les informations académiques</p>
+                  <h2 className="text-2xl font-black text-white">{t('classes.new_class')}</h2>
+                  <p className="text-white/40 text-sm font-medium">{t('classes.fill_academic_info')}</p>
                 </div>
               </div>
 
               <form onSubmit={handleCreate} className="flex flex-col gap-5">
                 <div className="flex flex-col gap-2">
-                  <label className="text-xs font-black uppercase tracking-widest text-white/40">ID Classe *</label>
+                  <label className="text-xs font-black uppercase tracking-widest text-white/40">{t('classes.class_id_label')}</label>
                   <input
                     type="text" value={classId} onChange={(e) => setClassId(e.target.value)}
-                    placeholder="Ex: M2ISI, L3INFO..."
+                    placeholder={t('classes.class_id_placeholder')}
                     className="w-full px-5 py-4 rounded-2xl bg-white/5 border border-white/10 focus:border-indigo-500/50 outline-none text-white placeholder:text-white/20 font-semibold transition-all"
                   />
                 </div>
                 <div className="flex flex-col gap-2">
-                  <label className="text-xs font-black uppercase tracking-widest text-white/40">Promotion *</label>
+                  <label className="text-xs font-black uppercase tracking-widest text-white/40">{t('classes.promotion_label')}</label>
                   <input
                     type="text" value={promotion} onChange={(e) => setPromotion(e.target.value)}
-                    placeholder="Ex: 2025, 2026..."
+                    placeholder={t('classes.promotion_placeholder')}
                     className="w-full px-5 py-4 rounded-2xl bg-white/5 border border-white/10 focus:border-indigo-500/50 outline-none text-white placeholder:text-white/20 font-semibold transition-all"
                   />
                 </div>
@@ -245,7 +247,7 @@ const Classes = () => {
                   className="w-full py-5 rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-black text-lg shadow-[0_0_30px_rgba(99,102,241,0.3)] hover:shadow-[0_0_50px_rgba(99,102,241,0.5)] transition-all flex items-center justify-center gap-3 disabled:opacity-50 mt-2"
                 >
                   {creating ? <Loader2 className="w-5 h-5 animate-spin" /> : <Plus className="w-5 h-5" />}
-                  CRÉER LA CLASSE
+                  {t('classes.create_class_btn')}
                 </motion.button>
               </form>
             </motion.div>

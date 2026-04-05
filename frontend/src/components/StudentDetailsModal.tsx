@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Calendar, Loader2, CheckCircle2, XCircle, ExternalLink, TrendingUp } from 'lucide-react';
 import { getAttendanceByStudent, type Student, type AttendanceRecord } from '../services/api';
+import { useTranslation } from 'react-i18next';
 
 interface StudentDetailsModalProps {
   student: Student | null;
@@ -9,6 +10,7 @@ interface StudentDetailsModalProps {
 }
 
 const StudentDetailsModal = ({ student, onClose }: StudentDetailsModalProps) => {
+  const { t } = useTranslation();
   const [attendanceHistory, setAttendanceHistory] = useState<AttendanceRecord[]>([]);
   const [loadingDetails, setLoadingDetails] = useState(false);
 
@@ -92,17 +94,17 @@ const StudentDetailsModal = ({ student, onClose }: StudentDetailsModalProps) => 
             <div className="grid grid-cols-3 divide-x divide-white/5 border-b border-white/5 shrink-0">
               <div className="flex flex-col items-center py-4 gap-1">
                 <span className="text-2xl font-black text-white">{attendanceHistory.length}</span>
-                <span className="text-[10px] font-black uppercase tracking-widest text-white/30">Séances</span>
+                <span className="text-[10px] font-black uppercase tracking-widest text-white/30">{t('studentDetails.sessions')}</span>
               </div>
               <div className="flex flex-col items-center py-4 gap-1">
                 <span className="text-2xl font-black text-emerald-400">{presentCount}</span>
-                <span className="text-[10px] font-black uppercase tracking-widest text-white/30">Présences</span>
+                <span className="text-[10px] font-black uppercase tracking-widest text-white/30">{t('sessionDetails.presents')}</span>
               </div>
               <div className="flex flex-col items-center py-4 gap-1">
                 <span className={`text-2xl font-black ${rate >= 75 ? 'text-emerald-400' : rate >= 50 ? 'text-yellow-400' : 'text-red-400'}`}>
                   {rate}%
                 </span>
-                <span className="text-[10px] font-black uppercase tracking-widest text-white/30">Fidélité</span>
+                <span className="text-[10px] font-black uppercase tracking-widest text-white/30">{t('studentDetails.fidelity')}</span>
               </div>
             </div>
 
@@ -110,18 +112,18 @@ const StudentDetailsModal = ({ student, onClose }: StudentDetailsModalProps) => 
             <div className="flex-1 overflow-y-auto p-5 flex flex-col gap-3">
               <div className="flex items-center gap-2 text-white/40 mb-1">
                 <Calendar className="w-4 h-4" />
-                <span className="text-xs font-black uppercase tracking-widest">Historique d'Assiduité</span>
+                <span className="text-xs font-black uppercase tracking-widest">{t('studentDetails.attendance_history')}</span>
               </div>
 
               {loadingDetails ? (
                 <div className="flex flex-col items-center justify-center py-20 gap-4 opacity-40">
                   <Loader2 className="w-10 h-10 animate-spin" />
-                  <p className="text-sm font-bold">Chargement de l'historique...</p>
+                  <p className="text-sm font-bold">{t('studentDetails.loading_history')}</p>
                 </div>
               ) : attendanceHistory.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-20 gap-4 opacity-25 text-center">
                   <TrendingUp className="w-16 h-16" />
-                  <p className="font-bold">Aucune séance enregistrée pour cet étudiant.</p>
+                  <p className="font-bold">{t('studentDetails.no_session_recorded_for_student')}</p>
                 </div>
               ) : (
                 attendanceHistory.map((item, i) => (
@@ -165,7 +167,7 @@ const StudentDetailsModal = ({ student, onClose }: StudentDetailsModalProps) => 
                           onClick={(e) => e.stopPropagation()}
                           className="w-10 h-10 rounded-xl overflow-hidden border border-white/10 hover:border-white/30 transition-all relative group/img"
                         >
-                          <img src={item.proofUrl} alt="Preuve" className="w-full h-full object-cover" />
+                          <img src={item.proofUrl} alt={t('studentDetails.proof')} className="w-full h-full object-cover" />
                           <div className="absolute inset-0 bg-black/50 opacity-0 group-hover/img:opacity-100 flex items-center justify-center transition-opacity">
                             <ExternalLink className="w-3.5 h-3.5 text-white" />
                           </div>
@@ -176,7 +178,7 @@ const StudentDetailsModal = ({ student, onClose }: StudentDetailsModalProps) => 
                           ? 'bg-emerald-500 text-white'
                           : 'bg-red-500/80 text-white'
                       }`}>
-                        {item.Status}
+                        {item.Status === 'PRESENT' ? t('attendance.present_upper') : t('attendance.absent_upper')}
                       </span>
                     </div>
                   </motion.div>
@@ -188,7 +190,7 @@ const StudentDetailsModal = ({ student, onClose }: StudentDetailsModalProps) => 
             {attendanceHistory.length > 0 && (
               <div className="px-5 pb-6 pt-4 border-t border-white/5 shrink-0">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-black uppercase tracking-widest text-white/30">Taux de présence</span>
+                  <span className="text-xs font-black uppercase tracking-widest text-white/30">{t('sessionDetails.attendance_rate')}</span>
                   <span className={`text-xs font-black ${rate >= 75 ? 'text-emerald-400' : rate >= 50 ? 'text-yellow-400' : 'text-red-400'}`}>
                     {rate}%
                   </span>

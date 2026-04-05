@@ -8,8 +8,10 @@ import {
 } from 'lucide-react';
 import { enrollStudent, getClasses, type EnrollResponse, type ClassItem } from '../services/api';
 import { useToast } from '../contexts/ToastContext';
+import { useTranslation } from 'react-i18next';
 
 const Enrollment = () => {
+  const { t } = useTranslation();
   const { success: toastSuccess, error: toastError, warning: toastWarning } = useToast();
   const webcamRef = useRef<Webcam>(null);
   const [loading, setLoading] = useState(false);
@@ -50,9 +52,9 @@ const Enrollment = () => {
   };
 
   const validate = () => {
-    if (!studentId) { toastWarning('Champ manquant', 'Veuillez renseigner le Matricule.'); return false; }
-    if (!studentName) { toastWarning('Champ manquant', 'Veuillez renseigner le Nom complet.'); return false; }
-    if (!classId) { toastWarning('Champ manquant', 'Veuillez sélectionner une classe.'); return false; }
+    if (!studentId) { toastWarning(t('enrollment.missing_field'), t('enrollment.fill_student_id')); return false; }
+    if (!studentName) { toastWarning(t('enrollment.missing_field'), t('enrollment.fill_full_name')); return false; }
+    if (!classId) { toastWarning(t('enrollment.missing_field'), t('enrollment.select_a_class')); return false; }
     return true;
   };
 
@@ -63,14 +65,14 @@ const Enrollment = () => {
       const data = await enrollStudent(imageSrc, studentId, studentName, classId, promotion);
       setResult(data);
       if (data.message) {
-        toastSuccess('Enrôlement réussi !', `${studentName} a été ajouté à la collection Rekognition.`);
+        toastSuccess(t('enrollment.enrollment_success'), `${studentName} ${t('enrollment.added_to_rekognition')}`);
         setStudentId('');
         setStudentName('');
       } else if (data.error) {
-        toastError('Échec de l\'enrôlement', data.error);
+        toastError(t('enrollment.enrollment_failed'), data.error);
       }
     } catch (err: any) {
-      toastError('Erreur', err.message || "Erreur lors de l'enrôlement");
+      toastError(t('attendance.error'), err.message || t('enrollment.error_during_enrollment'));
     } finally {
       setLoading(false);
     }
@@ -92,12 +94,12 @@ const Enrollment = () => {
     e.preventDefault();
     if (!validate()) return;
     if (!isCameraEnabled) {
-      toastWarning('Caméra désactivée', 'Activez la caméra pour capturer le visage.');
+      toastWarning(t('enrollment.camera_disabled_title'), t('enrollment.enable_camera_msg'));
       return;
     }
     const imageSrc = webcamRef.current?.getScreenshot();
     if (!imageSrc) {
-      toastError('Erreur caméra', 'Impossible de capturer l\'image de la webcam.');
+      toastError(t('enrollment.camera_error'), t('enrollment.cannot_capture_webcam'));
       return;
     }
     await processEnrollmentImage(imageSrc);
@@ -122,13 +124,13 @@ const Enrollment = () => {
             <div className="flex flex-col gap-2">
               <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-violet-500/10 border border-violet-500/20 text-violet-400 w-fit text-xs font-black uppercase tracking-widest">
                 <Fingerprint className="w-4 h-4" />
-                Enrôlement Biométrique
+                {t('enrollment.biometric_enrollment')}
               </div>
               <h1 className="text-4xl md:text-5xl font-black tracking-tighter text-white">
-                Nouveau <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-pink-400">Profil</span>
+                {t('enrollment.new')} <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-pink-400">{t('enrollment.profile')}</span>
               </h1>
               <p className="text-white/40 text-sm font-medium">
-                Ajoutez un étudiant à la collection AWS Rekognition avec une photo.
+                {t('enrollment.add_student_rekognition_desc')}
               </p>
             </div>
           </div>
@@ -146,7 +148,7 @@ const Enrollment = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-white/50">
               <Camera className="w-4 h-4" />
-              <span className="text-xs font-black uppercase tracking-widest">Capture Visage</span>
+              <span className="text-xs font-black uppercase tracking-widest">{t('enrollment.face_capture')}</span>
             </div>
             <button
               type="button"
@@ -158,7 +160,7 @@ const Enrollment = () => {
               }`}
             >
               {isCameraEnabled ? <Camera className="w-3.5 h-3.5" /> : <CameraOff className="w-3.5 h-3.5" />}
-              {isCameraEnabled ? 'Caméra ON' : 'Caméra OFF'}
+              {isCameraEnabled ? t('enrollment.camera_on') : t('enrollment.camera_off')}
             </button>
           </div>
 
@@ -174,7 +176,7 @@ const Enrollment = () => {
             ) : (
               <div className="flex flex-col items-center gap-3 opacity-20">
                 <CameraOff className="w-20 h-20" />
-                <p className="font-bold text-sm">Caméra désactivée</p>
+                <p className="font-bold text-sm">{t('attendance.camera_disabled')}</p>
               </div>
             )}
 
@@ -202,7 +204,7 @@ const Enrollment = () => {
                   <CheckCircle2 className="w-5 h-5 text-emerald-400" />
                 </div>
                 <div className="flex flex-col gap-0.5">
-                  <p className="text-sm font-black text-emerald-400">Enrôlement réussi !</p>
+                  <p className="text-sm font-black text-emerald-400">{t('enrollment.enrollment_success')}</p>
                   {result.faceId && (
                     <p className="text-[10px] font-mono text-emerald-400/50 break-all">ID: {result.faceId}</p>
                   )}
@@ -222,8 +224,8 @@ const Enrollment = () => {
               <Sparkles className="w-5 h-5 text-violet-400" />
             </div>
             <div>
-              <h2 className="text-lg font-black text-white">Informations de l'étudiant</h2>
-              <p className="text-white/30 text-xs font-medium">Tous les champs marqués * sont requis</p>
+              <h2 className="text-lg font-black text-white">{t('enrollment.student_info')}</h2>
+              <p className="text-white/30 text-xs font-medium">{t('enrollment.all_fields_required')}</p>
             </div>
           </div>
 
@@ -231,7 +233,7 @@ const Enrollment = () => {
 
             {/* Matricule */}
             <div className="flex flex-col gap-2">
-              <label className="text-[10px] font-black uppercase tracking-widest text-white/40">Matricule *</label>
+              <label className="text-[10px] font-black uppercase tracking-widest text-white/40">{t('enrollment.student_id_required')}</label>
               <input
                 type="text" value={studentId} onChange={e => setStudentId(e.target.value)}
                 placeholder="Ex: ESMT_001"
@@ -241,7 +243,7 @@ const Enrollment = () => {
 
             {/* Full name */}
             <div className="flex flex-col gap-2">
-              <label className="text-[10px] font-black uppercase tracking-widest text-white/40">Prénom &amp; Nom *</label>
+              <label className="text-[10px] font-black uppercase tracking-widest text-white/40">{t('enrollment.fullname_required')}</label>
               <input
                 type="text" value={studentName} onChange={e => setStudentName(e.target.value)}
                 placeholder="Ex: John Doe"
@@ -252,14 +254,14 @@ const Enrollment = () => {
             {/* Class + Promotion */}
             <div className="grid grid-cols-2 gap-4">
               <div className="flex flex-col gap-2">
-                <label className="text-[10px] font-black uppercase tracking-widest text-white/40">Classe *</label>
+                <label className="text-[10px] font-black uppercase tracking-widest text-white/40">{t('enrollment.class_label')}</label>
                 <div className="relative">
                   <select
                     value={classId}
                     onChange={e => handleClassChange(e.target.value)}
                     className="w-full px-5 py-4 rounded-2xl bg-white/5 border border-white/10 focus:border-violet-500/50 outline-none appearance-none cursor-pointer text-white font-semibold transition-all"
                   >
-                    <option value="" disabled className="bg-gray-900">Classe...</option>
+                    <option value="" disabled className="bg-gray-900">{t('enrollment.class_ellipsis')}</option>
                     {classes.map(c => (
                       <option key={c.classId} value={c.classId} className="bg-gray-900">{c.classId}</option>
                     ))}
@@ -269,7 +271,7 @@ const Enrollment = () => {
               </div>
 
               <div className="flex flex-col gap-2">
-                <label className="text-[10px] font-black uppercase tracking-widest text-white/40">Promotion</label>
+                <label className="text-[10px] font-black uppercase tracking-widest text-white/40">{t('enrollment.promotion')}</label>
                 <input
                   type="text" value={promotion} onChange={e => setPromotion(e.target.value)}
                   placeholder="Ex: 2026"
@@ -286,12 +288,12 @@ const Enrollment = () => {
                 className="py-4 rounded-2xl bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-500 hover:to-purple-500 text-white font-black flex items-center justify-center gap-2 shadow-[0_0_30px_rgba(124,58,237,0.3)] hover:shadow-[0_0_50px_rgba(124,58,237,0.5)] transition-all disabled:opacity-50 border border-white/10"
               >
                 {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Camera className="w-5 h-5" />}
-                Webcam
+                {t('enrollment.webcam')}
               </motion.button>
 
               <label className={`py-4 rounded-2xl bg-white/5 border border-white/10 text-white font-black hover:bg-white/10 hover:border-white/20 transition-all flex items-center justify-center gap-2 cursor-pointer ${loading ? 'opacity-50 pointer-events-none' : ''}`}>
                 <Upload className="w-5 h-5" />
-                Importer
+                {t('attendance.import')}
                 <input type="file" accept="image/*" className="hidden" onChange={handleFileUpload} />
               </label>
             </div>

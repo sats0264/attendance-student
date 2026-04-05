@@ -17,8 +17,10 @@ import SessionDetailsView from '../components/SessionDetailsView';
 import ConfirmModal from '../components/ConfirmModal';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
+import { useTranslation } from 'react-i18next';
 
 const ClassDetail = () => {
+  const { t } = useTranslation();
   const { classId } = useParams<{ classId: string }>();
   const { isAdmin, isTeacher, userData } = useAuth();
   const { success: toastSuccess, error: toastError } = useToast();
@@ -89,9 +91,9 @@ const ClassDetail = () => {
       await deleteStudent(studentToDelete);
       setStudents(prev => prev.filter(s => s.faceId !== studentToDelete));
       setStudentToDelete(null);
-      toastSuccess('Étudiant supprimé', 'Le profil biométrique a été retiré de Rekognition.');
+      toastSuccess(t('classDetail.student_deleted'), t('classDetail.student_removed_success'));
     } catch (err: any) {
-      toastError('Erreur de suppression', err.message);
+      toastError(t('students.delete_error'), err.message);
     } finally {
       setIsDeleting(false);
     }
@@ -104,7 +106,7 @@ const ClassDetail = () => {
           <div className="absolute inset-0 bg-indigo-500/30 blur-xl rounded-full animate-pulse" />
           <Loader2 className="w-14 h-14 animate-spin text-indigo-400 relative z-10" />
         </div>
-        <p className="font-black uppercase tracking-widest text-white/30 text-sm animate-pulse">Chargement...</p>
+        <p className="font-black uppercase tracking-widest text-white/30 text-sm animate-pulse">{t('classes.loading')}</p>
       </div>
     );
   }
@@ -128,7 +130,7 @@ const ClassDetail = () => {
             <div>
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-[10px] font-black uppercase tracking-widest mb-2">
                 <GraduationCap className="w-3.5 h-3.5" />
-                Promotion {classInfo?.promotion ?? 'N/A'}
+                {t('classDetail.promotion')} {classInfo?.promotion ?? 'N/A'}
               </div>
               <h1 className="text-4xl md:text-6xl font-black tracking-tighter text-white uppercase">
                 {classId}
@@ -141,11 +143,11 @@ const ClassDetail = () => {
             <div className="flex gap-3">
               <div className="flex flex-col items-center px-5 py-3 rounded-2xl bg-white/5 border border-white/10">
                 <span className="text-2xl font-black text-indigo-400">{students.length}</span>
-                <span className="text-[10px] font-black uppercase tracking-widest text-white/30">Étudiants</span>
+                <span className="text-[10px] font-black uppercase tracking-widest text-white/30">{t('classDetail.students')}</span>
               </div>
               <div className="flex flex-col items-center px-5 py-3 rounded-2xl bg-white/5 border border-white/10">
                 <span className="text-2xl font-black text-purple-400">{sessions.length}</span>
-                <span className="text-[10px] font-black uppercase tracking-widest text-white/30">Séances</span>
+                <span className="text-[10px] font-black uppercase tracking-widest text-white/30">{t('classDetail.sessions')}</span>
               </div>
             </div>
 
@@ -156,7 +158,7 @@ const ClassDetail = () => {
                 className="flex items-center gap-3 px-6 py-4 rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-black shadow-[0_0_30px_rgba(99,102,241,0.3)] hover:shadow-[0_0_50px_rgba(99,102,241,0.5)] transition-all border border-white/10 hover:scale-[1.02]"
               >
                 <UserPlus className="w-5 h-5" />
-                Inscrire
+                {t('classDetail.enroll')}
               </Link>
             )}
           </div>
@@ -166,8 +168,8 @@ const ClassDetail = () => {
       {/* Tabs */}
       <div className="flex items-center gap-1 p-1.5 bg-white/5 rounded-2xl w-fit border border-white/10">
         {[
-          { key: 'students', label: `Étudiants (${students.length})`, icon: Users },
-          { key: 'history', label: 'Historique Appels', icon: HistoryIcon },
+          { key: 'students', label: `${t('classDetail.students')} (${students.length})`, icon: Users },
+          { key: 'history', label: t('classDetail.rollcall_history'), icon: HistoryIcon },
         ].map(({ key, label, icon: Icon }) => (
           <button
             key={key}
@@ -191,12 +193,12 @@ const ClassDetail = () => {
             {loadingStudents ? (
               <div className="flex flex-col items-center justify-center py-32 gap-6">
                 <Loader2 className="w-12 h-12 animate-spin text-indigo-400" />
-                <p className="text-white/30 font-black text-sm uppercase tracking-widest animate-pulse">Chargement...</p>
+                <p className="text-white/30 font-black text-sm uppercase tracking-widest animate-pulse">{t('classes.loading')}</p>
               </div>
             ) : students.length === 0 ? (
               <div className="py-32 glass-panel rounded-[2rem] border border-dashed border-white/10 flex flex-col items-center justify-center gap-4 opacity-30 text-center">
                 <Users className="w-20 h-20 text-white/20" />
-                <p className="text-xl font-black">Aucun étudiant dans cette classe.</p>
+                <p className="text-xl font-black">{t('classDetail.no_student_in_class')}</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -218,12 +220,12 @@ const ClassDetail = () => {
             {loadingSessions ? (
               <div className="flex flex-col items-center justify-center py-32 gap-6">
                 <Loader2 className="w-12 h-12 animate-spin text-purple-400" />
-                <p className="text-white/30 font-black text-sm uppercase tracking-widest animate-pulse">Chargement...</p>
+                <p className="text-white/30 font-black text-sm uppercase tracking-widest animate-pulse">{t('classes.loading')}</p>
               </div>
             ) : sessions.length === 0 ? (
               <div className="py-32 glass-panel rounded-[2rem] border border-dashed border-white/10 flex flex-col items-center justify-center gap-4 opacity-30 text-center">
                 <Calendar className="w-20 h-20 text-white/20" />
-                <p className="text-xl font-black">Aucune séance pour cette classe.</p>
+                <p className="text-xl font-black">{t('classDetail.no_session_in_class')}</p>
               </div>
             ) : (
               <div className="glass-panel rounded-[2rem] border border-white/5 overflow-hidden premium-shadow">
@@ -241,9 +243,9 @@ const ClassDetail = () => {
 
       <ConfirmModal
         open={!!studentToDelete}
-        title="Supprimer l'étudiant ?"
-        message="Ce profil biométrique sera définitivement supprimé de la collection AWS Rekognition."
-        confirmLabel="Supprimer"
+        title={t('classDetail.delete_student_q')}
+        message={t('classDetail.delete_student_confirm_msg')}
+        confirmLabel={t('students.delete')}
         variant="danger"
         loading={isDeleting}
         onConfirm={confirmDeleteStudent}
