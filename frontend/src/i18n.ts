@@ -20,7 +20,7 @@ i18n
   .init({
     resources,
     fallbackLng: 'en',
-    lng: localStorage.getItem('i18nextLng') || 'en',
+    // We let LanguageDetector do its job, but we'll override its default if nothing is found
     debug: false,
     interpolation: {
       escapeValue: false, // react already safes from xss
