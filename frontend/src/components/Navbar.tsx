@@ -7,28 +7,25 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
 import { signOut } from 'aws-amplify/auth';
-import { useTranslation } from 'react-i18next';
-import LanguageSwitcher from './LanguageSwitcher';
 
 const Navbar = () => {
-  const { t } = useTranslation();
   const { isAdmin, isTeacher, userData, checkAuth } = useAuth();
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const links = [
-    { key: 'dashboard', path: '/dashboard', icon: LayoutDashboard },
+    { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
   ];
 
   if (isAdmin) {
-    links.push({ key: 'classes', path: '/classes', icon: GraduationCap });
-    links.push({ key: 'teachers', path: '/admin/teachers', icon: UserPlus });
+    links.push({ name: 'Classe', path: '/classes', icon: GraduationCap });
+    links.push({ name: 'Enseignant', path: '/admin/teachers', icon: UserPlus });
   } else if (isTeacher) {
-    links.push({ key: 'attendance', path: '/attendance', icon: Camera });
-    links.push({ key: 'my_classes', path: '/classes', icon: GraduationCap });
+    links.push({ name: 'Attendance', path: '/attendance', icon: Camera });
+    links.push({ name: 'Mes Classes', path: '/classes', icon: GraduationCap });
   }
 
-  links.push({ key: 'profile', path: '/profile', icon: User });
+  links.push({ name: 'Profil', path: '/profile', icon: User });
 
   const handleLogout = async () => {
     try {
@@ -40,7 +37,7 @@ const Navbar = () => {
     }
   };
 
-  const roleLabel = isAdmin ? t('navbar.role_admin') : isTeacher ? t('navbar.role_teacher') : t('navbar.role_user');
+  const roleLabel = isAdmin ? 'Administrateur' : isTeacher ? 'Enseignant' : 'Utilisateur';
   const roleColor = isAdmin
     ? 'from-amber-600 to-orange-600'
     : 'from-indigo-600 to-purple-600';
@@ -89,7 +86,7 @@ const Navbar = () => {
                       />
                     )}
                     <link.icon className={`w-4 h-4 relative z-10 transition-colors ${isActive ? 'text-white' : 'text-white/30 group-hover:text-white/60'}`} />
-                    <span className="relative z-10">{t(`navbar.${link.key}`)}</span>
+                    <span className="relative z-10">{link.name}</span>
                     {isActive && (
                       <motion.div
                         layoutId="nav-dot"
@@ -104,9 +101,6 @@ const Navbar = () => {
 
           {/* Desktop right: user + logout */}
           <div className="hidden md:flex items-center gap-3 shrink-0">
-            
-            <LanguageSwitcher />
-
             {/* User chip */}
             <div className="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-white/5 border border-white/8">
               <div className={`w-7 h-7 rounded-lg bg-gradient-to-br ${roleColor} flex items-center justify-center text-xs font-black text-white shrink-0`}>
@@ -125,7 +119,7 @@ const Navbar = () => {
               whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
               onClick={handleLogout}
               className="w-9 h-9 rounded-xl bg-red-500/10 border border-red-500/20 hover:bg-red-500 hover:border-red-500 text-red-400 hover:text-white transition-all hover:shadow-[0_0_20px_rgba(239,68,68,0.4)] flex items-center justify-center"
-              title={t('navbar.logout')}
+              title="Se déconnecter"
             >
               <LogOut className="w-4 h-4" />
             </motion.button>
@@ -169,7 +163,7 @@ const Navbar = () => {
               </div>
 
               {/* User info */}
-              <div className="flex items-center gap-3 p-3 rounded-2xl bg-white/5 border border-white/10 mb-2">
+              <div className="flex items-center gap-3 p-3 rounded-2xl bg-white/5 border border-white/10 mb-4">
                 <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${roleColor} flex items-center justify-center text-sm font-black text-white shrink-0`}>
                   {(userData?.name || roleLabel).charAt(0).toUpperCase()}
                 </div>
@@ -177,11 +171,6 @@ const Navbar = () => {
                   <span className="text-sm font-black text-white">{userData?.name || roleLabel}</span>
                   <span className="text-[10px] text-white/30 uppercase tracking-widest font-bold">{roleLabel}</span>
                 </div>
-              </div>
-
-              {/* Language Switcher Mobile */}
-              <div className="flex justify-start mb-4 px-1">
-                <LanguageSwitcher />
               </div>
 
               {/* Mobile links */}
@@ -198,7 +187,7 @@ const Navbar = () => {
                   }
                 >
                   <link.icon className="w-4 h-4" />
-                  {t(`navbar.${link.key}`)}
+                  {link.name}
                 </NavLink>
               ))}
 
@@ -208,7 +197,7 @@ const Navbar = () => {
                   className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-400 font-black hover:bg-red-500 hover:text-white hover:border-red-500 transition-all"
                 >
                   <LogOut className="w-4 h-4" />
-                  {t('navbar.logout')}
+                  Se déconnecter
                 </button>
               </div>
             </motion.div>
