@@ -1,0 +1,14 @@
+{
+  "navbar": {
+    "dashboard": "Dashboard",
+    "classes": "Classes",
+    "my_classes": "My Classes",
+    "teachers": "Teachers",
+    "attendance": "Attendance",
+    "profile": "Profile",
+    "logout": "Logout",
+    "role_admin": "Administrator",
+    "role_teacher": "Teacher",
+    "role_user": "User"
+  }
+}
