@@ -7,25 +7,28 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
 import { signOut } from 'aws-amplify/auth';
+import { useTranslation } from 'react-i18next';
+import LanguageSwitcher from './LanguageSwitcher';
 
 const Navbar = () => {
+  const { t } = useTranslation();
   const { isAdmin, isTeacher, userData, checkAuth } = useAuth();
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const links = [
-    { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
+    { name: t('navbar.dashboard'), path: '/dashboard', icon: LayoutDashboard },
   ];
 
   if (isAdmin) {
-    links.push({ name: 'Classe', path: '/classes', icon: GraduationCap });
-    links.push({ name: 'Enseignant', path: '/admin/teachers', icon: UserPlus });
+    links.push({ name: t('navbar.classes'), path: '/classes', icon: GraduationCap });
+    links.push({ name: t('navbar.teachers'), path: '/admin/teachers', icon: UserPlus });
   } else if (isTeacher) {
-    links.push({ name: 'Attendance', path: '/attendance', icon: Camera });
-    links.push({ name: 'Mes Classes', path: '/classes', icon: GraduationCap });
+    links.push({ name: t('navbar.attendance'), path: '/attendance', icon: Camera });
+    links.push({ name: t('navbar.my_classes'), path: '/classes', icon: GraduationCap });
   }
 
-  links.push({ name: 'Profil', path: '/profile', icon: User });
+  links.push({ name: t('navbar.profile'), path: '/profile', icon: User });
 
   const handleLogout = async () => {
     try {
@@ -37,7 +40,7 @@ const Navbar = () => {
     }
   };
 
-  const roleLabel = isAdmin ? 'Administrateur' : isTeacher ? 'Enseignant' : 'Utilisateur';
+  const roleLabel = isAdmin ? t('navbar.role_admin') : isTeacher ? t('navbar.role_teacher') : t('navbar.role_user');
   const roleColor = isAdmin
     ? 'from-amber-600 to-orange-600'
     : 'from-indigo-600 to-purple-600';
@@ -101,6 +104,8 @@ const Navbar = () => {
 
           {/* Desktop right: user + logout */}
           <div className="hidden md:flex items-center gap-3 shrink-0">
+            <LanguageSwitcher />
+
             {/* User chip */}
             <div className="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-white/5 border border-white/8">
               <div className={`w-7 h-7 rounded-lg bg-gradient-to-br ${roleColor} flex items-center justify-center text-xs font-black text-white shrink-0`}>
@@ -191,13 +196,16 @@ const Navbar = () => {
                 </NavLink>
               ))}
 
-              <div className="mt-auto">
+              <div className="mt-auto flex flex-col gap-3">
+                <div className="px-1">
+                  <LanguageSwitcher />
+                </div>
                 <button
                   onClick={handleLogout}
                   className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-400 font-black hover:bg-red-500 hover:text-white hover:border-red-500 transition-all"
                 >
                   <LogOut className="w-4 h-4" />
-                  Se déconnecter
+                  {t('navbar.logout')}
                 </button>
               </div>
             </motion.div>
